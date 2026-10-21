@@ -1,9 +1,11 @@
 import { DndContext, DragOverlay } from '@dnd-kit/core';
+import { useState } from 'react';
 import { createPortal } from 'react-dom';
 import type { Plan, Settings } from '../../domain/models';
 import { todayKey } from '../../domain/time';
 import { CalendarDropSlot, CalendarPlanBlock } from './CalendarDragItems';
 import { calendarPlanId, useCalendarDrag } from './calendarDrag';
+import type { PlanInterval } from './calendarResize';
 import './calendarDrag.css';
 import { parseDate, planLanes, plansForDate, timeInput } from './calendarLogic';
 
@@ -24,6 +26,15 @@ export function CalendarTimeGrid({
   readonly onPlan: (plan: Plan) => void;
   readonly onCreate: (date: string, minute: number) => void;
 }) {
+  const [previews, setPreviews] = useState<ReadonlyMap<string, PlanInterval>>(new Map());
+  function previewResize(id: string, interval: PlanInterval | null) {
+    setPreviews((current) => {
+      const next = new Map(current);
+      if (interval) next.set(id, interval);
+      else next.delete(id);
+      return next;
+    });
+  }
   const today = todayKey(new Date(), settings.timezone);
   const start = workHours ? Math.floor(settings.workStart / 30) * 30 : 0;
   const end = workHours ? Math.ceil(settings.workEnd / 30) * 30 : 1440;
@@ -56,7 +67,7 @@ export function CalendarTimeGrid({
       <p className="calendar-drag-help small muted">
         {drag.active && drag.target
           ? `Move to ${drag.target.date} at ${timeInput(drag.target.minute)}`
-          : 'Move a plan with its grip. On a keyboard: Space, arrow keys, then Enter. Escape cancels.'}
+          : 'Move with the grip. On touch, tap the grip to show resize edges. Drag an edge, or use Up/Down then Enter. Escape cancels.'}
       </p>
       <section
         className="calendar-time-scroll"
@@ -103,9 +114,10 @@ export function CalendarTimeGrid({
                     slot={{ date, minute }}
                     lunch={minute < settings.lunchEnd && minute + 30 > settings.lunchStart}
                     active={drag.active !== null}
-                    occupied={positioned.some(
-                      ({ plan }) => plan.startMinute < minute + 30 && plan.endMinute > minute,
-                    )}
+                    occupied={positioned.some(({ plan }) => {
+                      const interval = previews.get(plan.id) ?? plan;
+                      return interval.startMinute < minute + 30 && interval.endMinute > minute;
+                    })}
                     onCreate={() => onCreate(date, minute)}
                   />
                 ))}
@@ -119,6 +131,7 @@ export function CalendarTimeGrid({
                     end={end}
                     saving={drag.saving}
                     onPlan={onPlan}
+                    onResizePreview={previewResize}
                   />
                 ))}
               </div>

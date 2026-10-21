@@ -1,7 +1,15 @@
 import { FilePenLine, Pencil, Play, Trash2 } from 'lucide-react';
 import { useState } from 'react';
 import { useNavigate } from 'react-router-dom';
-import { Badge, Button, ConfirmDialog, Modal, Notice, useToast } from '../../components/ui';
+import {
+  Badge,
+  Button,
+  ConfirmDialog,
+  Modal,
+  Notice,
+  StatusBadge,
+  useToast,
+} from '../../components/ui';
 import { actions } from '../../data/actions';
 import { startTimer } from '../../data/timers';
 import { useWorkspace } from '../../data/useWorkspace';
@@ -30,7 +38,9 @@ export function PlanDetails({
     setBusy(true);
     setError('');
     try {
-      const existing = dailyEntries.find((entry) => entry.planId === plan.id && entry.date === plan.date);
+      const existing = dailyEntries.find(
+        (entry) => entry.planId === plan.id && entry.date === plan.date,
+      );
       const entry =
         existing ??
         (await actions.createDailyEntry({
@@ -50,6 +60,7 @@ export function PlanDetails({
           workDone: '',
           remarks: plan.notes,
           status: task?.status ?? 'Open',
+          businessUnit: plan.businessUnit ?? task?.businessUnit ?? project?.businessUnit ?? '',
           isLunch: false,
           timerId: null,
           planId: plan.id,
@@ -68,7 +79,9 @@ export function PlanDetails({
       await startTimer({
         title: plan.title,
         planId: plan.id,
-        sourceEntryId: dailyEntries.find(entry => entry.planId === plan.id && entry.date === plan.date)?.id ?? null,
+        sourceEntryId:
+          dailyEntries.find((entry) => entry.planId === plan.id && entry.date === plan.date)?.id ??
+          null,
         taskId: plan.taskId,
         projectId: plan.projectId,
         categoryId: plan.categoryId,
@@ -123,6 +136,7 @@ export function PlanDetails({
             </strong>
           </p>
           <div className="cluster">
+            {task && <StatusBadge status={task.status} />}
             {category && <Badge>{category.name}</Badge>}
             {plan.demo && <Badge>Demo</Badge>}
           </div>
@@ -140,6 +154,13 @@ export function PlanDetails({
               {project.name}
             </p>
           )}
+          {(plan.businessUnit ?? task?.businessUnit ?? project?.businessUnit) && (
+            <p className="small">
+              <span className="muted">Business Unit / Requested for</span>
+              <br />
+              {plan.businessUnit ?? task?.businessUnit ?? project?.businessUnit}
+            </p>
+          )}
           {plan.notes && <p className="calendar-notes">{plan.notes}</p>}
           <Button
             variant="primary"
@@ -154,6 +175,8 @@ export function PlanDetails({
               : 'Log work from this plan'}
           </Button>
           <Button
+            className="calendar-timer-action"
+            size="sm"
             onClick={() => {
               void start();
             }}
@@ -161,7 +184,7 @@ export function PlanDetails({
             disabled={timers.some((timer) => timer.entryId === null)}
           >
             <Play size={18} />
-            Start timer now
+            Start timer
           </Button>
           {timers.some((timer) => timer.entryId === null) && (
             <p className="small muted">

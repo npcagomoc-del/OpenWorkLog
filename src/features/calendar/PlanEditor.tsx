@@ -14,7 +14,7 @@ export function PlanEditor({
   readonly initial: { readonly date: string; readonly minute: number };
   readonly onClose: () => void;
 }) {
-  const { tasks, projects, categories } = useWorkspace();
+  const { tasks, projects, categories, settings } = useWorkspace();
   const [draft, setDraft] = useState<PlanCreateInput>(
     plan ?? {
       title: '',
@@ -54,6 +54,10 @@ export function PlanEditor({
             title: draft.title || task.title,
             projectId: task.projectId,
             categoryId: task.categoryId,
+            businessUnit:
+              task.businessUnit ??
+              projects.find((project) => project.id === task.projectId)?.businessUnit ??
+              '',
           }
         : {}),
     });
@@ -84,14 +88,20 @@ export function PlanEditor({
         <Field
           label="Linked task"
           htmlFor="plan-task"
-          hint={draft.taskDetached ? 'Choose a task to link this plan again. Leaving it unlinked keeps its history.' : 'Choose an existing task, or save this plan to add a new task to My Tasks.'}
+          hint={
+            draft.taskDetached
+              ? 'Choose a task to link this plan again. Leaving it unlinked keeps its history.'
+              : 'Choose an existing task, or save this plan to add a new task to My Tasks.'
+          }
         >
           <select
             id="plan-task"
             value={draft.taskId ?? ''}
             onChange={(event) => linkTask(event.target.value)}
           >
-            <option value="">{draft.taskDetached ? 'No linked task' : 'Create a task for this plan'}</option>
+            <option value="">
+              {draft.taskDetached ? 'No linked task' : 'Create a task for this plan'}
+            </option>
             {tasks
               .filter((task) => !task.archived || task.id === draft.taskId)
               .map((task) => (
@@ -155,7 +165,16 @@ export function PlanEditor({
             <select
               id="plan-project"
               value={draft.projectId ?? ''}
-              onChange={(event) => setDraft({ ...draft, projectId: event.target.value || null })}
+              onChange={(event) =>
+                setDraft({
+                  ...draft,
+                  projectId: event.target.value || null,
+                  businessUnit:
+                    draft.businessUnit ||
+                    projects.find((project) => project.id === event.target.value)?.businessUnit ||
+                    '',
+                })
+              }
             >
               <option value="">No project</option>
               {projects
@@ -184,6 +203,24 @@ export function PlanEditor({
             </select>
           </Field>
         </div>
+        <Field
+          label="Business Unit / Requested for"
+          htmlFor="plan-unit"
+          hint="Optional. Inherited from a selected task or project; you can change it here."
+        >
+          <input
+            id="plan-unit"
+            list="plan-units"
+            value={draft.businessUnit ?? ''}
+            onChange={(event) => setDraft({ ...draft, businessUnit: event.target.value })}
+            placeholder="Unassigned"
+          />
+          <datalist id="plan-units">
+            {settings.businessUnits.map((unit) => (
+              <option key={unit} value={unit} />
+            ))}
+          </datalist>
+        </Field>
         <Field label="Notes" htmlFor="plan-notes">
           <textarea
             id="plan-notes"

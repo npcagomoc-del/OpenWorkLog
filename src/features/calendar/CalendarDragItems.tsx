@@ -3,6 +3,9 @@ import { GripVertical } from 'lucide-react';
 import type { Plan } from '../../domain/models';
 import { type CalendarSlot, calendarPlanId, calendarSlotId } from './calendarDrag';
 import { timeInput } from './calendarLogic';
+import type { PlanInterval } from './calendarResize';
+import { usePlanResize } from './usePlanResize';
+import './calendarResize.css';
 
 export function CalendarDropSlot({
   slot,
@@ -50,6 +53,7 @@ export function CalendarPlanBlock({
   end,
   saving,
   onPlan,
+  onResizePreview,
 }: {
   readonly plan: Plan;
   readonly lane: number;
@@ -58,19 +62,22 @@ export function CalendarPlanBlock({
   readonly end: number;
   readonly saving: boolean;
   readonly onPlan: (plan: Plan) => void;
+  readonly onResizePreview: (id: string, interval: PlanInterval | null) => void;
 }) {
+  const resize = usePlanResize(plan, (interval) => onResizePreview(plan.id, interval));
+  const interval = resize.interval;
   const { setNodeRef, setActivatorNodeRef, attributes, listeners, isDragging } = useDraggable({
     id: calendarPlanId(plan.id),
-    disabled: saving,
+    disabled: saving || resize.saving || resize.active,
   });
   return (
     <div
       ref={setNodeRef}
-      className={`calendar-block ${isDragging ? 'calendar-block--dragging' : ''}`}
+      className={`calendar-block ${isDragging ? 'calendar-block--dragging' : ''} ${resize.active ? 'calendar-block--resizing' : ''}`}
       data-calendar-plan={plan.id}
       style={{
-        top: `${((Math.max(plan.startMinute, start) - start) / 30) * 3.5}rem`,
-        height: `${((Math.min(plan.endMinute, end) - Math.max(plan.startMinute, start)) / 30) * 3.5}rem`,
+        top: `${((Math.max(interval.startMinute, start) - start) / 30) * 3.5}rem`,
+        height: `${((Math.min(interval.endMinute, end) - Math.max(interval.startMinute, start)) / 30) * 3.5}rem`,
         left: `calc(${(lane / laneCount) * 100}% + 3px)`,
         width: `calc(${100 / laneCount}% - 6px)`,
       }}
@@ -83,9 +90,44 @@ export function CalendarPlanBlock({
       >
         <strong>{plan.title}</strong>
         <span>
-          {timeInput(plan.startMinute)}–{timeInput(plan.endMinute)}
+          {timeInput(interval.startMinute)}–{timeInput(interval.endMinute)}
         </span>
       </button>
+      {(['start', 'end'] as const).map((edge) => (
+        <button
+          key={edge}
+          type="button"
+          className={`calendar-resize-handle calendar-resize-handle--${edge}`}
+          aria-label={`Resize ${edge} of ${plan.title}`}
+          aria-describedby={`calendar-resize-help-${plan.id}`}
+          aria-pressed={resize.active}
+          disabled={saving || resize.saving || isDragging}
+          title={`Resize ${edge} · arrows change 30 minutes · Enter saves · Escape cancels`}
+          onPointerDown={(event) => resize.pointerDown(event, edge)}
+          onPointerMove={resize.pointerMove}
+          onPointerUp={(event) => {
+            event.stopPropagation();
+            void resize.commit();
+          }}
+          onPointerCancel={resize.cancel}
+          onLostPointerCapture={resize.lostCapture}
+          onKeyDown={(event) => resize.keyDown(event, edge)}
+          onBlur={() => {
+            if (resize.active && !resize.saving) resize.cancel();
+          }}
+        >
+          <span aria-hidden="true" />
+        </button>
+      ))}
+      <span className="visually-hidden" id={`calendar-resize-help-${plan.id}`}>
+        Arrow keys resize by 30 minutes. Enter saves. Escape cancels.
+      </span>
+      <span
+        className={resize.active ? 'calendar-resize-feedback' : 'visually-hidden'}
+        role="status"
+      >
+        {resize.message}
+      </span>
       <button
         ref={setActivatorNodeRef}
         id={`calendar-handle-${plan.id}`}
