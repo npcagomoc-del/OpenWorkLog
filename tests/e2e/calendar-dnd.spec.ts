@@ -64,7 +64,7 @@ test('calendar mouse drag moves one linked plan and its planned-only daily entry
   await expect(page.getByRole('button', { name: 'Move switch inspection', exact: true })).toHaveCount(1);
 });
 
-test('calendar keyboard drag moves half-hour/day, restores focus and cancels without changes', async ({ page }) => {
+test('calendar keyboard drag moves half-hour/day, restores focus and cancels without changes', async ({ page }, testInfo) => {
   await addPlan(page, 'Keyboard plan');
   const handle = page.getByRole('button', { name: 'Move plan Keyboard plan', exact: true });
   await handle.scrollIntoViewIfNeeded();
@@ -85,6 +85,7 @@ test('calendar keyboard drag moves half-hour/day, restores focus and cancels wit
   await page.keyboard.press('Escape');
   await expect(page.locator('.calendar-drag-preview')).toBeHidden();
   await expect(page.locator('.calendar-block-open')).toHaveAttribute('title', 'Keyboard plan · 09:30–10:30');
+  await page.screenshot({ path: testInfo.outputPath('calendar-keyboard-cancel-settled.png'), fullPage: true });
   await page.reload();
   await page.getByLabel('Go to date', { exact: true }).fill('2026-10-21');
   await expect(page.locator('.calendar-block-open')).toHaveAttribute('title', 'Keyboard plan · 09:30–10:30');

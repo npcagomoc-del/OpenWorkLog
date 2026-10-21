@@ -49,6 +49,7 @@ test('keyboard move supports cancel, status movement and focus restoration', asy
   await page.keyboard.press('Escape');
   await expect(page.locator('.task-drag-preview')).toBeHidden();
   await expect(page.getByLabel('Move Keyboard backup review to status')).toHaveValue('Open');
+  await page.screenshot({ path: testInfo.outputPath('task-keyboard-cancelled.png') });
   await handle.focus();
   await handle.press('Space', { delay: 50 });
   await expect(handle).toHaveAttribute('aria-pressed', 'true');
