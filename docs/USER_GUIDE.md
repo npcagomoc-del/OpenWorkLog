@@ -14,7 +14,7 @@ The default working day is 08:00–17:00, with lunch at 12:00–13:00. Daily log
 
 On a desktop or tablet, use the navigation sidebar. **Collapse navigation** reduces it, and **Focus view** in My tasks gives the task list more space. Use **Exit focus** or press `Esc` to leave focus mode. The top toolbar also has search and theme controls. `Ctrl+K` on Windows or `Cmd+K` on macOS opens search for tasks and notes.
 
-On a narrow phone screen, the bottom bar opens Today, Tasks, Daily Log and Notes. Use **More** or the menu button for Projects, Calendar, Reports and Settings. Wide tables scroll horizontally inside their own area; swipe across the table to see the remaining columns.
+On a narrow phone screen, the bottom bar opens Today, Tasks, Daily Log and Notes. Use **More** or the menu button for Executive, Projects, Calendar, Reports and Settings. Wide tables scroll horizontally inside their own area; swipe across the table to see the remaining columns.
 
 ## Keep your task tracker up to date
 
@@ -31,11 +31,23 @@ Use the same three statuses throughout the app:
 | In Progress | Yellow | Work is underway. |
 | Closed | Green | Work is finished. |
 
-Choose **List** for readable task summaries, **Table** for the tracker columns, or **Kanban** for the three status groups. Change a task's status with its status selector or **Move to** control. Kanban uses explicit status controls; dragging cards is not required.
+Choose **List** for readable task summaries, **Table** for the tracker columns, or **Kanban** for the three status groups. Change a task's status with its status selector or **Move to** control.
+
+In Kanban, drag a task by its grip into another status column. With a mouse, move the handle a little to begin dragging. On a touch screen, hold the handle briefly (about 200 milliseconds), then move it. For a keyboard, focus the handle, press `Space` or `Enter` to pick up the task, use Right/Down for the next status or Left/Up for the previous status, then press `Space` or `Enter` to drop. `Esc` cancels. The status selector remains available as an alternative to dragging.
 
 Search by task, ticket or update. Filter by status, category or work type. Click the task title to edit its full details; use its pencil control for a quick rename. **Export CSV** exports the tasks currently matching the My tasks filters.
 
 Deleting a task requires confirmation. Saved daily entries, plans and notes retain their content, but their link to the deleted task is removed. Download a backup before removing information you may need later.
+
+### How the tracker, calendar and daily log connect
+
+When saving non-break work in Daily log or Calendar, select an existing task if the work belongs to it. Otherwise the app creates a linked task, so the activity also appears in My tasks. It does not merge activities just because their titles match. Repeatedly entering the same title without selecting its existing task can create separate tracker items.
+
+A task created from a daily entry starts with that entry's status. A task created from a calendar plan starts Open. New tasks use your local profile name as the owner when set and leave the due date blank: a scheduled work date is not automatically a deadline. Set **By when** explicitly in My tasks when there is a deadline. You can also change the work type, title, owner and status there.
+
+When a daily entry has planned start/end times, it also creates or updates its linked calendar plan. Lunch/break entries do not create tracker tasks. Existing task titles and statuses are not overwritten by later daily entries or timer reviews; recorded activity titles and statuses remain separate work history. Finishing one session does not automatically close the overall task.
+
+On the first upgrade of an older workspace, the app links existing non-break activities that lack task links. This runs once. Later launches and backups from the upgraded workspace preserve intentionally removed task links rather than treating them as new standalone work to backfill again.
 
 ## Organize projects and operational work
 
@@ -57,6 +69,10 @@ Open a plan to:
 - **Start timer now** to measure work from the current time, keeping planned time separate.
 
 Finish or review the active timer before starting another. Deleting a calendar plan keeps the linked task and saved daily work history.
+
+Moving a plan also moves the date/times of its linked planned-only daily entry. Once actual work exists, its recorded date and actual times remain history. Deleting a plan keeps its daily entry's planned times, and ordinary remarks edits or timer use do not recreate the deleted plan. Explicitly changing the daily planned times can create a new calendar plan.
+
+In the Day and Week time grids, drag a plan by its grip to a new date/time slot. The move preserves its duration and snaps its start to a half-hour slot. On touch, hold the handle briefly before moving it. With a keyboard, focus the grip, press `Space` or `Enter`, use Up/Down for 30-minute steps and Left/Right for another visible day, then press `Space` or `Enter` to save. `Esc` cancels. A move that would end after midnight is rejected. Dragging is limited to the displayed time grid; use **Edit plan** for exact times, dates outside the current view, or the Month view.
 
 ## Record the full day in Daily log
 
@@ -90,13 +106,13 @@ The daily entry status is separate from its linked task's status. Saving a repor
 
 ## Use the timer
 
-1. In **Daily log**, select a linked task or choose a standalone activity.
-2. Enter a session name and choose **Start timer**. You can also start from a calendar plan.
+1. In **Daily log**, use **Planned work** to choose a calendar plan or daily activity for the selected log date. Change the daily log date to see another day's work. You can also use a daily activity's **Start timer** button or a calendar plan's **Start timer now**.
+2. For new work, leave **Planned work** at **New session or existing task**, select an existing linked task or **New task from this session**, enter a session name and choose **Start timer**.
 3. Use **Pause** for time that should not count, then **Resume** when working again.
 4. Choose **Stop and review**.
 5. Review the linked details, write **Work done**, choose the entry status and **Save work log**.
 
-Only one unfinished timer is allowed. Its state and time segments are saved locally, so a reload does not reset it. A running timer continues to accrue elapsed time while the app is closed; pause or stop it before leaving if that time should not count. Paused time is excluded. A session spanning midnight is allocated to the relevant daily dates using the workspace time zone.
+Only one unfinished timer is allowed. Its state and time segments are saved locally, so a reload does not reset it. The timer shows its planned date/time, linked task and actual start when available. Choosing past or future planned work does not backdate the measurement: the timer always records actual time from now. A running timer continues to accrue elapsed time while the app is closed; pause or stop it before leaving if that time should not count. Paused time is excluded. A session spanning midnight is allocated to the relevant daily dates using the workspace time zone.
 
 Closing the review leaves the session available through **Review session**. **Discard** removes that unfinished timer after confirmation; saved work logs and linked tasks remain.
 
@@ -112,6 +128,16 @@ The dashboard separates the selected day's activity from the whole workspace:
 - **Portfolio overview** shows current unarchived task and project status counts, plus tasks due by the selected date.
 
 Changing the dashboard date changes the daily figures. The portfolio remains the current saved tracker, not a historical snapshot of task statuses.
+
+## Prepare an executive overview
+
+Open **Executive** for a higher-level view of operational tasks, other tasks, projects and work time. Choose **Last 7 days**, **Last 30 days** or an Activity from/to range. Optionally filter by category and owner.
+
+The activity dates filter planned time, logged productive time, time by category and the time figures in owner workload. Portfolio totals and statuses remain the current unarchived records. Overdue tasks are unfinished tasks due before today in the workspace time zone; tasks due today are counted separately. Category and owner filters apply to both portfolio and activity.
+
+The overview includes unfinished tasks, active projects, overdue work, productive time, a status summary, planned-versus-logged time, owner workload and upcoming project dates. Expand **View time figures** for exact chart values. Longer date ranges group days into buckets so the chart stays readable. A linked calendar plan and its daily entry contribute planned time once, rather than twice.
+
+Use **Export summary CSV** to download the displayed scope and summary figures. This is an executive summary, not a replacement for the full tracker/daily exports or a JSON backup. Figures come from records saved in this local workspace; the dashboard does not fetch another employee's device or infer missing work. If demo records are present, the page and export scope include them and show a notice. Check the scope before sharing.
 
 ## Keep study notes
 
@@ -170,6 +196,6 @@ Your records belong to this browser profile and URL on this device. They do not 
 
 ## Appearance and offline use
 
-In **Settings → Appearance**, choose Light, Dark or System, text size, time display, week start and sidebar preference. The toolbar theme control cycles through appearance options. Animations respect the device's reduced-motion preference.
+In **Settings → Appearance**, choose Light, Dark, Super dark or System, text size, time display, week start and sidebar preference. Super dark uses near-black surfaces; System follows the device's light/dark preference. The toolbar theme control cycles through the four appearance options. Animations respect the device's reduced-motion preference.
 
 After the production app has loaded and cached successfully, use it offline from the same installed app or browser origin. Records save locally while offline. Reconnect to receive app updates. Download backups regularly, especially before clearing site data, switching profiles or changing devices. Offline operation does not provide cloud backup or multi-user synchronization.

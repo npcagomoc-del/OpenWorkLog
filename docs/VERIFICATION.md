@@ -1,63 +1,74 @@
 # Verification record
 
-Verified locally on 2026-10-21 (Asia/Manila), using the production build and Chromium. This record separates executable checks from hardware and hosting limits.
+Verified locally on 2026-10-21 using the production build and installed Google Chrome. Checks used isolated test workspaces. Private browser records and backups are excluded from source and QA deliverables.
 
-## Final checks
+## Connected-work update
 
 | Check | Result |
 | --- | --- |
-| Strict TypeScript (`npm run typecheck`) | Passed |
-| Unit/integration (`npm test`) | 53 passed across 12 files; final rerun 1.37 seconds |
-| Lint (`npm run lint`) | Exit 0; 6 CSS warnings and 6 informational style suggestions remain |
-| Production build (`npm run build`) | Passed; 41 PWA precache assets, about 687 KiB total |
-| Dependency audit (`npm audit`) | 0 vulnerabilities |
-| Browser acceptance (`npm run test:e2e`) | 19 passed, zero failed/skipped/flaky results, 1.3 minutes |
-| Responsive and state captures | 132 valid PNGs, covering five viewport sizes and the states below |
-| Accessibility | 18 axe checks, zero violations; Lighthouse Accessibility 100 on six page/device audits |
-| Independent visual review | Pass A and Pass B both PASS, no blockers; each inspected all 132 final captures and five supplemental Large-table captures |
-| GitHub source upload | Source uploaded to private npcagomoc-del/OpenWorkLog on main; initial source commit 4e66d6c, local and remote SHA verified |
+| Strict TypeScript | Passed |
+| Unit/data tests | 76 passed across 16 files |
+| Lint | Exit 0; 6 warnings and 6 informational suggestions remain |
+| Production build | Passed; 46 PWA precache assets, 783.19 KiB |
+| Dependency audit | 0 vulnerabilities |
+| Production browser acceptance | 32 passed; zero failed, skipped or flaky results; 184.658 seconds |
+| Responsive evidence | 280 validated PNGs: 269 matrix frames and 11 connected/drag states |
+| Accessibility | 72 axe states with zero reported violations; incomplete automated checks are documented separately |
+| Independent data review | PASS; all 13 reviewed data/domain file hashes still match |
 
-The final production HTML fingerprint is `7dc953c4e0c6585360c508e894a9e3c69312c3d0a8be3ba96425d50b2e080cfe` (SHA-256). Its main bundle is `index-B4yz85nS.js` and shared stylesheet is `index-DxhdqkLE.css`.
+Production HTML SHA-256: `0061a5c712614fd5378a77a82c9a1ad66ca49627a63553d484c4e40de215820a`. Main bundle: `index-DO0qN-Ao.js`. The capture manifest records all 118 source file hashes, production asset hashes, image signatures, dimensions, capture times and hashes. Its source aggregate is `3938deca8f7846a02ef1727774eab7f73314525a2672f53340977b6f61c31468`; manifest SHA-256 is `836895feb07715e2e9a7e5d6ecec94b35d48d67da5126fbc0f3b4412fbbd0513`.
 
-## Behaviors exercised through the app
+## Workflows exercised
 
-- Task creation, rename, status change, database reopen, List/Table/Kanban views, and category rename propagation.
-- Project, task, planner and daily-entry links, preserved planned times, and reopening the same daily record.
-- Timer start, pause, reload, resume, review and save, leaving the task's status unchanged.
-- A planned activity timed twice updates one stable daily entry. The test corrects the first session to 10 minutes, adds a new 10-minute session, and verifies 20 minutes, both work descriptions, and preserved planned times.
-- All 48 half-hour slots; a 13:10–13:42 activity allocates 20 and 12 minutes across adjacent slots; lunch is excluded from productive time.
-- Study note creation, editing, search, pin, review, archive and deletion; HTML is treated as text.
-- Tracker and daily CSV downloads parsed independently with csv-parse; commas, quotes and newlines preserved, and formula-leading tracker text escaped.
-- CSV preview, unsupported-status rejection and confirmed import.
-- JSON backup download, preview without replacement, explicit replacement confirmation, successful restore and invalid-file protection.
-- Production service-worker offline reload, offline edit, another offline reload, and persistence after reconnecting.
-- Light/dark persistence, sidebar collapse and task focus view.
-- Native editor focus and Escape dismissal; mobile navigation drawer opening and Escape dismissal.
+- A new non-break Daily activity or Calendar plan creates one canonical My Tasks record. Explicitly linked work reuses its task. Planned Daily work appears in Calendar. Lunch creates no tracker task.
+- Older workspaces and version-1 backups receive one atomic link upgrade. Intentional task/plan deletions remain detached during edits, rescheduling, timer use, reload and current-backup restore. Schedule dates do not become task deadlines.
+- Timer planned-work selection includes Daily and Calendar sources, with planned date/window while running, after reload and during review. Saving updates the existing daily entry, preserves manual corrections and appends new work descriptions. The parent task is not automatically closed. Overnight manually supplied planned times apply to the review date only.
+- Mouse, touch and keyboard Task status movement and Calendar rescheduling persist after reload. Cancellation and keyboard focus restoration pass. Calendar moves preserve duration, allow an end at 24:00 and reject an end after midnight. Occupied background creation slots and active destination labels pass accessibility assertions.
+- Super dark uses neutral black surfaces, persists and preserves the other appearance modes. Open remains blue, In Progress yellow and Closed green.
+- Executive uses saved current portfolio records and separately date-filtered planned/logged activity. Linked plans are counted once. UI fixture shows 2h planned and 32m logged. Independent CSV parsing verifies actual export contents; changing activity dates does not rewrite current status totals.
+- Existing task/category/note persistence, all 48 half-hour slots, quoted/formula-safe CSV, import validation, JSON backup preview/confirmed restore and invalid-file protection pass.
+- Production service-worker offline reload, offline edit, another offline reload and persistence after reconnect pass.
 
-The plan-timer browser fixture initially allowed its simulated wall clock to advance during UI actions, rounding an expected 13:42 endpoint to 13:43. Pausing every browser timer then prevented React's lazy route from settling. The final fixture fixes Date at explicit timestamps while leaving the browser scheduler running. Exact time and data assertions were retained; production timer calculations were not changed to fit the test.
+Root also manually used the actual in-app browser on a separate production origin: saved one activity, confirmed My Tasks and Calendar, physically dragged it to In Progress, reloaded, selected its planned timer source and checked Executive exact figures of 1h planned/30m logged. Screenshots contain only deliberate sample records.
 
-## Responsive and visual evidence
+## Responsive coverage and repaired findings
 
-Viewport sizes: 375×812, 430×932, 800×1280, 1280×800 and 1440×1000. Every product route and the component showcase were captured, plus Table/Kanban bodies, late-day Day/Week calendar grids, the final daily half-hour, dashboard portfolio, study-note reader, report preview, backup settings, dark mode, large text and task-editor dialogs. The two phone sizes include the mobile drawer. Desktop captures include normal-motion rest/entry/mid/settled frames and a reduced-motion frame.
+Viewport sizes: 375×812, 430×932, 800×1280, 1280×800 and 1440×1000. Every route and the component showcase were captured in Light and Super dark, plus the task Table/Kanban, late Calendar slots, full-day log, planned/running timer, Executive sections/exact figures, mobile drawers, note reader, report preview, backup settings, Dark/Large text, dialogs and motion states. Tables/charts use their intended internal horizontal viewport. Each matrix state asserts no document-width overflow.
 
-Each state asserts no document-width overflow. Computed checks confirm that the keyboard hint is hidden at widths up to 1050 pixels, note-search padding reserves at least 40 pixels for its icon, and reduced motion removes the dialog animation. The screenshot manifest validates PNG signatures and dimensions and records each image's SHA-256. A reviewer may inspect horizontal table contents through their intended scroll viewport.
+A pre-update real-browser regression reproduced the reported missing Daily-to-Task link. Independent data review then found task recreation after intentional deletion and duplicated overnight planned bounds; both were repaired and covered by regressions. Accessibility checks found dimmed drag text, decorative portal semantics, obscured Calendar create targets, a visible/accessibility label mismatch and small tap targets. These were repaired before the final build and fresh captures.
 
-First-round visual review found three real issues: a mobile keyboard hint over the search icon, the notes magnifier overlapping its placeholder, and task-table short fields wrapping awkwardly. These were repaired and the complete fresh 132-image set was captured for independent round 2 review. Round 2 found that the task-table status selector clipped In Progress. A scoped table-only minimum width repaired it. A failing-first browser check measured 98.61 pixels available against 116.71 pixels required for the actual label, padding and native arrow. The same label-fit check now passes at all five viewport sizes; it does not pin a CSS width constant. The final release reviewers received a newly captured complete 132-image set after that repair. Previous review reports are preserved as history rather than treated as approval.
-
-Stable evidence is in the sibling `OpenWorkLog-QA` deliverable: `acceptance-results-final.json`, `capture-manifest-final.json`, `responsive-final/`, `data-integrity-final.md`, `performance-final.md`, and visual review reports. Playwright's working `test-results/` directory is replaced on each run. Test records and downloaded backups are excluded from Git.
-
-Final independent approvals: visual-system-release.md (Pass A) and visual-pixels-release.md (Pass B), both PASS without blocking findings. Both recomputed source aggregate SHA-256 33ff0adfedd91b17e84ec421e0e50cf713331695df428ce046443a987433e00f and the final production HTML fingerprint above. The reviewed final capture-manifest SHA-256 is 8885b4fe1004220a8bc7c5ff352c582265169e00150ec1efee6a7ba6b633c327. Five additional actual Settings Large task-table captures and ten 16/18-pixel root-size label-fit checks are indexed separately in OpenWorkLog-QA/performance/table-large-manifest.json and table-label-fit.json. Controls measured 160/180 px against 116.71/128.30 px required; all five viewport sizes passed with no document overflow.
+One intermediate browser candidate passed 31/32. Its sole failure was a synthetic zero-duration Space press followed immediately by an arrow before the drag library attached its keyboard listener. The final fixture uses a human keypress and checks drag readiness; all exact midnight, cancellation, focus and persistence assertions remain. Intermediate reports are retained as history and are not final approvals.
 
 ## Performance and limits
 
-Final Lighthouse single-run scores:
+Lighthouse performance scores are three-run medians per page/device, 30 runs total. The isolated populated workspace contained two hours of planned work and 32 minutes logged through the real UI.
 
-| Page | Desktop performance | Mobile performance | Accessibility / Best Practices / SEO |
-| --- | --- | --- | --- |
-| Dashboard | 100 | 99 | 100 / 100 / 100 |
-| My Tasks | 100 | 99 | 100 / 100 / 100 |
-| Daily Log | 100 | 100 | 100 / 100 / 100 |
+| Page | Desktop | Mobile |
+| --- | --- | --- |
+| Dashboard | 100 | 98 |
+| My Tasks | 100 | 98 |
+| Calendar | 100 | 98 |
+| Daily Log | 100 | 100 |
+| Executive | 100 | 100 |
 
-These are measured single runs, not three-run medians. The final audit also found no document overflow, visible controls smaller than its 44-pixel heuristic, or JavaScript page errors across its tested routes and sizes. CSS 200% zoom and reduced-motion checks passed. React Doctor completed on 79 files with zero errors and 22 warnings; static warnings are recorded in the audit. Production React Scan did not expose full component timing summaries, so no claim of zero unnecessary renders is made.
+Accessibility, Best Practices and SEO scored 100 on all 30 runs. Scores are local lab measurements and vary with host load; they are not physical-device performance guarantees. The 72-state axe matrix covers five routes, Light/Super dark, three viewport sizes and active drag, planned/running timer and expanded Executive states. Its separate effective-target geometry checks account for associated checkbox labels. Five 200% CSS zoom checks and reduced-motion checks pass. React Doctor reports zero errors and 28 warnings across 104 source files; warnings are recorded rather than silently suppressed. Production profiling did not expose complete component timings, so no claim of zero unnecessary renders is made.
 
-All device checks used Chromium with emulated dimensions. Physical Tab S10 FE, phone hardware, other browser engines, installation prompts on every platform and external hosting were not verified. Local data is stored in IndexedDB. There is no configured cloud database or multi-device synchronization. A GitHub source upload is not a deployed website. Keep JSON backups outside the browser before clearing site data or moving to another origin/device.
+Automated contrast checks have incomplete results for some gradient, SVG and clipped/scrollable regions. The audit retains these limitations alongside manual/rendered contrast checks. These results are not full WCAG certification.
+
+All device checks use Chrome with emulated viewport/touch settings. Physical Tab S10 FE and phone hardware, other browser engines and installation prompts on every OS are unverified. Bundled Chromium fails to launch on this host; the documented optional installed-Chrome channel was used without weakening the default/CI configuration.
+
+The database is local IndexedDB through Dexie. There is no configured cloud database, account service or automatic multi-device synchronization. Offline operation requires a successful initial production load and retained browser storage. Keep JSON backups outside the browser before clearing site data, moving origins or transferring devices. GitHub source upload does not deploy a public website; hosted CI and external hosting are not claimed as verified.
+
+## Evidence locations
+
+The sibling `OpenWorkLog-QA-v2` output contains the acceptance JSON, capture manifest and `responsive-final/`, independent data review, root manual proof, build checks, final performance audit and independent visual reports. Supplementary evidence is indexed separately so the original 280-image manifest remains reproducible. Temporary Playwright `test-results/` is not the durable release record.
+
+The initial release history remains in sibling `OpenWorkLog-QA`; its earlier 53-test/19-browser/132-capture results describe the original build, not this update.
+
+## Final visual approval
+
+Independent Pass A and Pass B both PASS with no blockers on the HTML fingerprint above. Each covered all 314 final frames: original 280, corrected 32-frame detail supplement and two settled Escape-cancel captures. Pass B opened every frame individually; Pass A covered the complete numbered contact-sheet inventory with additional full-resolution checks. Both independently verified source and image hashes.
+
+The supplement closes offscreen due-row, running-timer context and phone right-scroll evidence gaps. An initial supplemental capture raced theme persistence; the entire supplement was regenerated with saved-theme and computed-black assertions. Corrected supplement manifest SHA-256: `ce21524988b183abfb166fa97f4564ef7eb0d60977ed080c24d72ad8b09517fe`. No product source changed for these framing repairs.
+
+After screenshot-only test additions, all five responsive cases passed again in 46.7 seconds; each separate Task/Calendar keyboard-cancel case passed. Strict TypeScript compilation also passed. The original full 32-scenario result remains unchanged and reproducible.

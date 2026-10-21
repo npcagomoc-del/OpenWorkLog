@@ -76,11 +76,13 @@ Installation is optional; supported browsers can also keep the production app av
 
 In **Settings**:
 
-- Choose Light, Dark or System appearance and Comfortable or Large text.
+- Choose Light, Dark, Super dark or System appearance and Comfortable or Large text.
 - Set the working day and lunch times. Defaults are 08:00–17:00 and 12:00–13:00.
 - Set an IANA time zone, such as `Asia/Manila`, and save the schedule.
 - Set your local profile name and the labels for Task, Operational and Project work.
 - Add categories before importing tasks that use those names.
+
+Work saved in Daily log or Calendar is linked to the task tracker automatically. Choose existing tasks when recording related work to avoid creating separate tracker items for the same activity. On an older workspace, the first upgrade also connects existing non-break activities that lack task links. New backups preserve the upgrade marker and intentional deletions.
 
 See the [user guide](USER_GUIDE.md) for the normal workday, reports and backup procedure.
 
@@ -119,3 +121,12 @@ Read [ARCHITECTURE.md](../ARCHITECTURE.md), [DESIGN.md](../DESIGN.md), [PROJECT_
 | Offline launch fails | Load the production HTTPS/localhost app online first. Check service-worker support and retained site data. Reload online after an update. |
 | Restore is rejected | Use an unmodified OpenWorkLog JSON backup of a supported version. An Excel file, CSV or manually rearranged JSON is not a full backup. |
 | Import is rejected | Read row errors, use the exact statuses and create referenced categories/projects first. See the CSV section in the user guide. |
+
+If Playwright's bundled Chromium cannot launch on Windows but Google Chrome is installed, run the browser suite with the installed Chrome channel from PowerShell:
+
+```powershell
+$env:PLAYWRIGHT_CHANNEL = 'chrome'
+npm run test:e2e
+```
+
+The suite still uses isolated test contexts and does not change your personal workspace database. This setting applies to the current terminal session. Open a new terminal to return to the default bundled Chromium channel; CI uses the bundled channel unless this variable is explicitly set. No registry or security-setting changes are needed.

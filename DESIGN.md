@@ -76,3 +76,23 @@ Shared primitives and app shell are implemented in src/components and src/app. F
 Development diagnostics: react-grab and react-scan are installed and opt-in using VITE_ENABLE_REACT_DEVTOOLS=1, gated again by import.meta.env.DEV. React Doctor's current dependency requires newer Node than the host22.11; the bundled runtime may be used for static diagnostic audit. This does not affect production application behavior.
 
 Calendar feature geometry: half-hour row 3.5rem (56px), time gutter 4rem (64px), week min-width 56rem with a named horizontal viewport; time canvas max-height 46rem. These preserve readable 44px-or-larger time targets. Body font is available as --font-body for timer captions and feature controls. Native [hidden] always wins over control display styles; visually-hidden helpers are anchored at inset0 to avoid offscreen overflow.
+
+## Connected work and interaction update
+
+My Tasks is the canonical work list. Creating a non-break daily activity or Calendar plan creates or links a task atomically; lunch/break records stay in the daily log. Explicit source IDs connect timers, plans and daily records, preserving manual corrections and history. Scheduled work is available directly in the timer chooser, with its planned date/window visible.
+
+Super dark uses the explicit `black` theme: canvas #000000, surfaces #101010/#181818, hover #242424, sidebar #080808, text #f5f5f5, muted #b0b0b0 and border #363636. Blue stays an interactive or status accent rather than tinting neutral surfaces. Existing Light, Dark and System remain. Toolbar cycle: System, Light, Dark, Super dark.
+
+Task-board and Calendar drag handles support pointer, deliberate touch activation and keyboard movement. Drag state, valid targets, cancellation and saved changes must be visible and announced. Explicit status selectors and plan editing remain available. Reduced motion removes drag/drop transitions without disabling movement.
+
+The Executive dashboard uses actual local workspace records. Current task/project portfolio counts remain distinct from date-filtered work logs. Planned and logged time are labeled separately, breaks excluded from productive hours, and no utilization, staffing or forecast figures are invented. Charts include readable values and text/table equivalents.
+
+Super dark semantic tokens: accent/Open #8bc1ff, accent-hover #b8d9ff, accent-soft/Open-bg #142235, on-accent #061c30, Progress text/background #3b2d00/#f6d66b, Closed #9de3b6/#12301d, Danger #ffacb4/#3a151b, and a black 72% overlay scrim. Neutral black shadows preserve layering. Native form controls and browser theme-color follow the active appearance.
+
+Calendar drag interaction uses a 44px handle, 6px mouse activation, 200ms deliberate touch hold with 8px tolerance, and Space/arrows/Enter/Escape keyboard controls. Half-hour targets retain plan duration and reject a destination beyond midnight rather than truncating time. Drag overlays and target highlights use existing semantic/motion tokens.
+
+Executive visualization primitives are a status ring and grouped actual/planned activity bars, with visible legends, decorative SVG and expandable exact-figure tables. Activity uses no more than 14 date buckets, with a keyboard-accessible horizontal viewport when needed. Current unarchived portfolio counts are separate from dated activity; project entities count once, project-type child tasks stay task records, and planned blocks are deduplicated by plan ID. Recorded history can retain archived-task owners without adding archived work to the current portfolio.
+
+Calendar auto-scroll activates only in the outer 8% edge zone, avoiding unintended slot changes during ordinary drops. Keyboard scheduling commits the explicitly selected semantic date/time even when a visual drag rectangle reaches the final-row boundary; exact end at 24:00 is valid, later end times are rejected with feedback. Timer context links reuse the 44px text-link primitive.
+
+Active drag sources remain fully readable, with a dashed semantic outline instead of opacity dimming. Decorative drag previews are hidden from assistive technology and do not accept pointer input; the focused source and live announcements remain accessible. Calendar slots covered by an existing plan cannot open a second create action, while their drop targets stay available. Visible drop labels and accessible names describe the same destination.

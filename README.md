@@ -1,10 +1,12 @@
 # OpenWorkLog
 
-An offline-first workspace for tasks, projects, daily work reports, a built-in planner, and study notes. Developed by NPC.
+An offline-first workspace for tasks, projects, daily work reports, a built-in planner, executive summaries and study notes. Developed by NPC.
 
 OpenWorkLog stores records in this browser on this device using IndexedDB. It does not require API keys or a cloud account. A GitHub copy of the source code does not back up your work records.
 
 Read the [setup guide](docs/SETUP.md) for installation, hosting and offline setup, and the [user guide](docs/USER_GUIDE.md) for tasks, daily logs, timers, notes, CSV reports and backups.
+
+Non-break work entered in Daily log or Calendar links to the task tracker. Choose an existing task to reuse it, or let the app create a task for new work. Planned daily work also appears on the calendar. Kanban status changes and calendar rescheduling support mouse, touch and keyboard grips, with status selectors and edit forms available too. Appearance includes Light, Dark, Super dark and System.
 
 ## Run locally
 
