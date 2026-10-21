@@ -33,10 +33,11 @@ it('propagates an explicit plan category edit and clear to its linked task', asy
   await actions.updatePlan(plan.id, { categoryId: null });
   expect((await db.tasks.get(plan.taskId ?? ''))?.categoryId).toBeNull();
 });
-it('preserves newer canonical category during unchanged full form and rescheduling', async () => {
+it('preserves newer canonical category when the editor omits an untouched category and reschedules', async () => {
   const { plan, category } = await fixture();
   await actions.updateTask(plan.taskId ?? '', { categoryId: category.id });
-  await actions.updatePlan(plan.id, { ...plan, date: '2026-10-22' });
+  const { categoryId: _untouchedCategory, ...unchangedFields } = plan;
+  await actions.updatePlan(plan.id, { ...unchangedFields, date: '2026-10-22' });
   expect((await db.tasks.get(plan.taskId ?? ''))?.categoryId).toBe(category.id);
 });
 it('keeps deleted tasks detached and rolls back invalid category updates', async () => {
@@ -56,3 +57,19 @@ it('applies the chosen category when explicitly creating a plan linked to an exi
   await actions.createPlan({ ...plan, date: '2026-10-24', categoryId: null });
   expect((await db.tasks.get(plan.taskId ?? ''))?.categoryId).toBeNull();
 });
+it.each([false, true])(
+  'honors explicit selection matching the old snapshot while the canonical category differs (clear=%s)',
+  async (clear) => {
+    const { plan, category } = await fixture();
+    const other = await actions.createCategory({
+      name: 'Other',
+      color: '#654321',
+      archived: false,
+    });
+    const selected = clear ? null : category.id;
+    await actions.updatePlan(plan.id, { categoryId: selected });
+    await actions.updateTask(plan.taskId ?? '', { categoryId: other.id });
+    await actions.updatePlan(plan.id, { categoryId: selected });
+    expect((await db.tasks.get(plan.taskId ?? ''))?.categoryId).toBe(selected);
+  },
+);

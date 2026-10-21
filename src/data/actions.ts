@@ -144,7 +144,7 @@ async function updatePlan(id: string, patch: Partial<PlanCreateInput>): Promise<
     const connected = await connectPlan(
       planSchema.parse({ ...previous, ...patch, updatedAt: new Date().toISOString() }),
     );
-    if (connected.taskId && previous.categoryId !== connected.categoryId)
+    if (connected.taskId && patch.categoryId !== undefined)
       await tasks.update(connected.taskId, { categoryId: connected.categoryId });
     return connected;
   });
