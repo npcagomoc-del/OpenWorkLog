@@ -313,3 +313,106 @@ input[type="color"] {
   --cancelled: #c3adb3;
   --cancelled-bg: #332c2f;
 }
+
+:root {
+  --focus-toolbar-height: 56px;
+  --focus-strip-height: 56px;
+  --focus-inset: 8px;
+  --phone-time-gutter: 52px;
+  --calendar-slot-height: 56px;
+  --board-phone-lane: 304px;
+  --ink-toolbar-row: 56px;
+  --accent-seed: #0969c7;
+  --accent-hover-seed: #0555a7;
+}
+:root[data-theme="dark"] {
+  --accent-seed: #77b5ff;
+  --accent-hover-seed: #a0ccff;
+}
+:root[data-theme="black"] {
+  --accent-seed: #8bc1ff;
+  --accent-hover-seed: #b8d9ff;
+}
+:root[data-preset="apple"][data-theme="light"] {
+  --bg: #f5f5f7;
+  --surface: #ffffff;
+  --surface-soft: #f0f0f2;
+  --surface-hover: #e7e7eb;
+  --sidebar: #fbfbfd;
+  --text: #1d1d1f;
+  --muted: #626268;
+  --border: #d2d2d7;
+  --accent-seed: #0071e3;
+  --accent-hover-seed: #0066cc;
+}
+:root[data-preset="apple"][data-theme="dark"] {
+  --bg: #000000;
+  --surface: #272729;
+  --surface-soft: #2a2a2c;
+  --surface-hover: #353538;
+  --sidebar: #1c1c1e;
+  --text: #f5f5f7;
+  --muted: #b0b0b5;
+  --border: #505055;
+  --accent-seed: #2997ff;
+  --accent-hover-seed: #6bb8ff;
+}
+:root[data-preset="apple"][data-theme="black"] {
+  --surface: #171719;
+  --surface-soft: #242426;
+  --surface-hover: #303034;
+  --sidebar: #080809;
+  --accent-seed: #2997ff;
+  --accent-hover-seed: #6bb8ff;
+}
+:root[data-preset="claude"][data-theme="light"] {
+  --bg: #f5f4ed;
+  --surface: #faf9f5;
+  --surface-soft: #e8e6dc;
+  --surface-hover: #dedbd0;
+  --sidebar: #f0eee6;
+  --text: #141413;
+  --muted: #5e5d59;
+  --border: #c2c0b6;
+  --accent-seed: #c96442;
+  --accent-hover-seed: #b85133;
+}
+:root[data-preset="claude"][data-theme="dark"] {
+  --bg: #141413;
+  --surface: #30302e;
+  --surface-soft: #3d3d3a;
+  --surface-hover: #484844;
+  --sidebar: #20201e;
+  --text: #faf9f5;
+  --muted: #b0aea5;
+  --border: #5e5d59;
+  --accent-seed: #d97757;
+  --accent-hover-seed: #ed9b7d;
+}
+:root[data-preset="claude"][data-theme="black"] {
+  --surface: #242422;
+  --surface-soft: #30302e;
+  --surface-hover: #3d3d3a;
+  --sidebar: #0b0b0a;
+  --text: #faf9f5;
+  --muted: #b0aea5;
+  --border: #5e5d59;
+  --accent-seed: #d97757;
+  --accent-hover-seed: #ed9b7d;
+}
+
+.appearance-preset--classic {
+  --preview-bg: #f5f6f8;
+  --preview-surface: #ffffff;
+  --preview-accent: #0969c7;
+}
+.appearance-preset--apple {
+  --preview-bg: #f5f5f7;
+  --preview-surface: #ffffff;
+  --preview-accent: #0071e3;
+}
+.appearance-preset--claude {
+  --preview-bg: #f5f4ed;
+  --preview-surface: #faf9f5;
+  --preview-accent: #a54d30;
+}

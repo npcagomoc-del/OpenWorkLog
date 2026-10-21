@@ -1,18 +1,14 @@
 import { isTerminalStatus } from '../domain/models';
-import { Suspense, useEffect, useState } from 'react';
+import { Suspense, useEffect, useRef, useState } from 'react';
 import { NavLink, Outlet, useLocation } from 'react-router-dom';
 import {
   HardDrive,
   Maximize2,
   Menu,
   Minimize2,
-  Monitor,
-  Moon,
-  MoonStar,
   MoreHorizontal,
   PanelLeftClose,
   Search,
-  Sun,
 } from 'lucide-react';
 import { useWorkspace } from '../data/useWorkspace';
 import { actions } from '../data/actions';
@@ -20,16 +16,10 @@ import { Brand } from '../components/Brand';
 import { IconButton, Modal, Spinner, useToast } from '../components/ui';
 import { navigation } from './navigation';
 import { SearchDialog } from './SearchDialog';
+import { FocusExit } from './FocusExit';
+import { nextTheme, themeIcons, themeLabels } from './themeCycle';
 import { ShellContext } from './ShellContext';
 import { TimerDock } from './TimerDock';
-const nextTheme = { system: 'light', light: 'dark', dark: 'black', black: 'system' } as const;
-const themeIcons = { system: Monitor, light: Sun, dark: Moon, black: MoonStar } as const;
-const themeLabels = {
-  system: 'system',
-  light: 'light',
-  dark: 'dark',
-  black: 'super dark',
-} as const;
 export function Shell() {
   const { settings, tasks } = useWorkspace();
   const { toast } = useToast();
@@ -38,10 +28,17 @@ export function Shell() {
   const [drawer, setDrawer] = useState(false);
   const [search, setSearch] = useState(false);
   const [online, setOnline] = useState(navigator.onLine);
+  const previousPath = useRef(location.pathname);
   const current = navigation.find((item) => item.to === location.pathname);
   useEffect(() => {
     document.title = `${current?.label ?? 'OpenWorkLog'} · OpenWorkLog`;
   }, [current?.label]);
+  useEffect(() => {
+    if (previousPath.current !== location.pathname) {
+      previousPath.current = location.pathname;
+      setFocusMode(false);
+    }
+  }, [location.pathname]);
   useEffect(() => {
     const change = () => setOnline(navigator.onLine);
     window.addEventListener('online', change);
@@ -57,7 +54,9 @@ export function Shell() {
         event.preventDefault();
         setSearch((value) => !value);
       }
-      if (event.key === 'Escape') setFocusMode(false);
+      if (event.key === 'Escape' && !event.defaultPrevented && !document.querySelector('dialog[open]')) {
+        setFocusMode(false);
+      }
     };
     window.addEventListener('keydown', handle);
     return () => window.removeEventListener('keydown', handle);
@@ -110,7 +109,7 @@ export function Shell() {
   return (
     <ShellContext.Provider value={{ focusMode, setFocusMode }}>
       <div
-        className={`app-shell ${settings.sidebarCollapsed ? 'sidebar-collapsed' : ''} ${focusMode ? 'focus-mode' : ''}`}
+        className={`app-shell ${settings.sidebarCollapsed ? 'sidebar-collapsed' : ''} ${focusMode ? 'focus-mode' : ''} ${focusMode && ['/calendar', '/tasks'].includes(location.pathname) ? 'focus-contained' : ''}`}
       >
         <a href="#main-content" className="skip-link">
           Skip to content
@@ -193,6 +192,9 @@ export function Shell() {
             </div>
           </header>
           <main id="main-content" className="main-scroll" tabIndex={-1}>
+            {focusMode && !['/calendar', '/tasks'].includes(location.pathname) && (
+              <FocusExit onExit={() => setFocusMode(false)} />
+            )}
             <div className="page-content" key={location.pathname}>
               <Suspense fallback={<Spinner label="Opening this page…" />}>
                 <Outlet />

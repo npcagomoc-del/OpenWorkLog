@@ -26,6 +26,58 @@ export function AppearanceSettings({ settings, save }: Props) {
           ]}
         />
       </Field>
+      <fieldset className="appearance-presets">
+        <legend>Surface style</legend>
+        <p className="muted small">Choose the neutral surfaces and default button color. Status and category colors stay separate.</p>
+        <div className="appearance-preset-grid">
+          {([
+            { value: 'classic', label: 'Default', detail: 'OpenWorkLog blue' },
+            { value: 'apple', label: 'Apple', detail: 'Cool neutral · blue' },
+            { value: 'claude', label: 'Warm', detail: 'Warm neutral · terracotta' },
+          ] as const).map((preset) => (
+            <button
+              type="button"
+              key={preset.value}
+              className={`appearance-preset appearance-preset--${preset.value}`}
+              aria-pressed={settings.appearancePreset === preset.value}
+              onClick={() => void save({ appearancePreset: preset.value })}
+            >
+              <span className="appearance-preview" aria-hidden="true">
+                <span className="appearance-preview-panel" />
+                <span className="appearance-preview-action" />
+              </span>
+              <strong>{preset.label}</strong>
+              <span>{preset.detail}</span>
+            </button>
+          ))}
+        </div>
+      </fieldset>
+      <Field label="Button color" hint="Links, focus rings and primary buttons use a readable shade. Status colors stay independent.">
+        <div className="appearance-accent-row">
+          {settings.actionAccent ? (
+            <input
+              id="action-accent"
+              type="color"
+              aria-label="Custom button color"
+              value={settings.actionAccent}
+              onChange={(event) => void save({ actionAccent: event.target.value })}
+            />
+          ) : (
+            <button
+              id="action-accent"
+              type="button"
+              className="appearance-customize"
+              onClick={() => void save({ actionAccent: getComputedStyle(document.documentElement).getPropertyValue('--accent-seed').trim() })}
+            >
+              Customize button color
+            </button>
+          )}
+          <span className="appearance-current-accent" aria-hidden="true" />
+          <button type="button" className="text-link" disabled={!settings.actionAccent} onClick={() => void save({ actionAccent: undefined })}>
+            Restore default button color
+          </button>
+        </div>
+      </Field>
       <div className="form-grid">
         <Field label="Text size">
           <SegmentedControl
