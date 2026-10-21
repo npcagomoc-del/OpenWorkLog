@@ -2,7 +2,7 @@ import { useState } from 'react';
 import { Upload } from 'lucide-react';
 import { Button, Field, Modal, Notice, StatusBadge, useToast } from '../../components/ui';
 import { importTasksCsv, previewTasksCsv, type CsvPreview } from '../../data/csv';
-import type { TaskCreateInput, Workspace } from '../../domain/models';
+import { STATUSES, type TaskCreateInput, type Workspace } from '../../domain/models';
 import { errorMessage } from '../daily/entryForm';
 
 import { ScrollablePreview } from './ScrollablePreview';
@@ -75,7 +75,7 @@ export function CsvImport({ workspace, onClose }: Props) {
       <div className="stack">
         <p className="muted">
           Preview a tracker CSV before adding tasks. Required columns: Task and Status. Allowed
-          statuses: Open, In Progress, Closed.
+          statuses: {STATUSES.join(', ')}.
         </p>
         <Notice>
           Import adds new tasks; it does not replace existing records. Category and project names

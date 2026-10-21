@@ -31,4 +31,3 @@ export function matchesBusinessUnit(
 export function businessUnitFilterLabel(filter: string | undefined): string {
   return filter === UNASSIGNED_UNIT ? 'Unassigned' : filter || 'All business units';
 }
-

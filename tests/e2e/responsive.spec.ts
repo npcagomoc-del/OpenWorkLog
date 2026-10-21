@@ -247,6 +247,7 @@ for (const size of sizes) {
       if (route === '/tasks') {
         await page.getByRole('button', { name: 'Kanban', exact: true }).click();
         await page.locator('.task-board-viewport').evaluate(element => { element.scrollLeft = element.scrollWidth; });
+        await page.locator('.task-board-viewport').scrollIntoViewIfNeeded();
         await capture('tasks-status-right-super-dark');
       }
     }

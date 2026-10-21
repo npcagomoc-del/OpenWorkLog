@@ -155,9 +155,3 @@ test.describe('touch resize', () => {
     await cdp.detach();
   });
 });
-
-
-
-
-
-

@@ -1,7 +1,7 @@
 import { expect, test } from '@playwright/test';
 import { openBlankWorkspace } from './workspace';
 
-test('one multi-slot activity has one timer action and all full-day grid slots', async ({ page }) => {
+test('one multi-slot activity has one timer action and all full-day grid slots', async ({ page }, testInfo) => {
   await openBlankWorkspace(page);
   await page.getByRole('link', { name: 'Daily Log', exact: true }).click();
   await page.getByRole('button', { name: 'Add entry', exact: true }).click();
@@ -20,12 +20,12 @@ test('one multi-slot activity has one timer action and all full-day grid slots',
     await page.setViewportSize({ width, height: 960 });
     await block.scrollIntoViewIfNeeded();
     expect((await block.boundingBox())?.height).toBeLessThanOrEqual(320);
-    await page.screenshot({ path: `C:/Users/Default.LAPTOP-CSA57S2U/Documents/Codex/2026-10-21/ex/work/timer-daily/span-${width}.png` });
+    await page.screenshot({ path: testInfo.outputPath(`span-${width}.png`) });
     expect(await page.evaluate(() => document.documentElement.scrollWidth <= window.innerWidth)).toBe(true);
   }
 });
 
-test('session seconds survive pause reload and stop, while a repeated start begins at zero', async ({ page }) => {
+test('session seconds survive pause reload and stop, while a repeated start begins at zero', async ({ page }, testInfo) => {
   await page.clock.setFixedTime(new Date('2026-10-21T00:00:00Z'));
   await openBlankWorkspace(page);
   await page.getByRole('link', { name: 'Daily Log', exact: true }).click();
@@ -49,7 +49,7 @@ test('session seconds survive pause reload and stop, while a repeated start begi
   await page.setViewportSize({ width: 375, height: 960 });
   await page.locator('.daily-activity-block').scrollIntoViewIfNeeded();
   expect(await page.locator('.daily-activity-block').evaluate(element => element.scrollHeight <= element.clientHeight)).toBe(true);
-  await page.screenshot({ path: 'C:/Users/Default.LAPTOP-CSA57S2U/Documents/Codex/2026-10-21/ex/work/timer-daily/paused-actual-375.png' });
+  await page.screenshot({ path: testInfo.outputPath('paused-actual-375.png') });
   await page.setViewportSize({ width: 1280, height: 960 });
   await page.getByLabel('Linked task', { exact: true }).selectOption({ label: 'Seconds session' });
   await page.getByRole('button', { name: 'Start timer', exact: true }).click();
@@ -67,7 +67,7 @@ test('session seconds survive pause reload and stop, while a repeated start begi
 
 
 
-test('recorded work is placed at actual time while a distant plan remains context', async ({ page }) => {
+test('recorded work is placed at actual time while a distant plan remains context', async ({ page }, testInfo) => {
   await openBlankWorkspace(page);
   await page.getByRole('link', { name: 'Daily Log', exact: true }).click();
   await page.getByRole('button', { name: 'Add entry', exact: true }).click();
@@ -82,7 +82,7 @@ test('recorded work is placed at actual time while a distant plan remains contex
   const block = page.locator('.daily-activity-block').filter({ hasText: 'Rescheduled actual work' });
   await expect(block).toHaveCount(1);
   await block.scrollIntoViewIfNeeded();
-  await page.screenshot({ path: 'C:/Users/Default.LAPTOP-CSA57S2U/Documents/Codex/2026-10-21/ex/work/timer-daily/actual-placement.png' });
+  await page.screenshot({ path: testInfo.outputPath('actual-placement.png') });
   await expect(block).toContainText('Planned: 08:00–09:00');
   await expect(block).toContainText('Actual: 16:00–17:00 · 1h active');
   await expect(block).toHaveCSS('grid-row-start', '33');
@@ -98,7 +98,3 @@ test('recorded work is placed at actual time while a distant plan remains contex
   await expect(page.locator('[data-slot]')).toHaveCount(48);
   await expect(page.locator('.daily-summary .card').filter({ hasText: 'Productive time' }).locator('strong')).toHaveText('1h');
 });
-
-
-
-
