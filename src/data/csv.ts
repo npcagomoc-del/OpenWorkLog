@@ -1,7 +1,8 @@
+import { recordMeta, type TaskCreateInput, taskSchema, type Workspace } from '../domain/models';
+import { entryMinutes, minuteLabel } from '../domain/time';
 import { db } from './db';
 import { checkLinks } from './relations';
-import { recordMeta, taskSchema, type Workspace, type TaskCreateInput } from '../domain/models';
-import { minuteLabel, entryMinutes } from '../domain/time';
+
 function segmentTime(minute: number): string {
   const seconds = Math.round(minute * 60);
   return [Math.floor(seconds / 3600), Math.floor((seconds % 3600) / 60), seconds % 60]
@@ -30,6 +31,7 @@ export function exportTasksCsv(workspace: Workspace): string {
       'Project',
       'Description',
       'Ticket',
+      'Business Unit',
     ],
     ...workspace.tasks.map((task) => [
       task.id,
@@ -44,6 +46,7 @@ export function exportTasksCsv(workspace: Workspace): string {
       workspace.projects.find((p) => p.id === task.projectId)?.name ?? '',
       task.description,
       task.ticket,
+      task.businessUnit ?? '',
     ]),
   ]);
 }
@@ -68,6 +71,7 @@ export function exportDailyCsv(workspace: Workspace, date?: string): string {
       'Lunch',
       'Productive Minutes',
       'Active Segments',
+      'Business Unit',
     ],
     ...workspace.dailyEntries
       .filter((e) => !date || e.date === date)
@@ -93,6 +97,7 @@ export function exportDailyCsv(workspace: Workspace, date?: string): string {
             (segment) => segmentTime(segment.startMinute) + '–' + segmentTime(segment.endMinute),
           )
           .join('; ') ?? '',
+        e.businessUnit ?? '',
       ]),
   ]);
 }
@@ -181,6 +186,7 @@ export function previewTasksCsv(text: string, workspace: Workspace): CsvPreview 
     const parsed = taskSchema.safeParse({
       ...recordMeta(),
       title: get('task'),
+      businessUnit: get('business unit'),
       description: get('description'),
       status: get('status'),
       priority: get('priority') || 'Normal',

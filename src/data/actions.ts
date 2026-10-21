@@ -5,7 +5,6 @@ import {
   categorySchema,
   type DailyEntry,
   type DailyEntryCreateInput,
-  DEFAULT_SETTINGS,
   dailyEntrySchema,
   noteSchema,
   type Plan,
@@ -13,14 +12,20 @@ import {
   planSchema,
   projectSchema,
   recordMeta,
-  type Settings,
-  settingsSchema,
+  type TaskCreateInput,
   taskSchema,
   WorkspaceError,
 } from '../domain/models';
 import { connectEntry, connectPlan } from './connectedWork';
 import { db } from './db';
 import { checkLinks } from './relations';
+import {
+  deleteNotebook,
+  renameBusinessUnit,
+  renameNotebook,
+  updateSettings,
+} from './settingsActions';
+import { inheritedBusinessUnit } from './workUnits';
 
 function repository<
   T extends {
@@ -32,8 +37,8 @@ function repository<
 >(table: Table<T, string>, schema: ZodType<T>) {
   return {
     async create(input: CreateInput<T>): Promise<T> {
-      const record = schema.parse({ ...input, ...recordMeta() });
       return db.transaction('rw', db.tables, async () => {
+        const record = schema.parse({ ...input, ...recordMeta() });
         await checkLinks(record);
         await table.add(record);
         return record;
@@ -55,6 +60,11 @@ function repository<
   };
 }
 const tasks = repository(db.tasks, taskSchema);
+async function createTask(input: TaskCreateInput) {
+  return db.transaction('rw', db.tables, async () =>
+    tasks.create({ ...input, businessUnit: await inheritedBusinessUnit(input) }),
+  );
+}
 const projects = repository(db.projects, projectSchema);
 const categories = repository(db.categories, categorySchema);
 const notes = repository(db.notes, noteSchema);
@@ -95,40 +105,6 @@ async function deleteCategory(id: string): Promise<void> {
     await db.categories.delete(id);
   });
 }
-async function updateSettings(patch: Partial<Omit<Settings, 'id'>>): Promise<Settings> {
-  return db.transaction('rw', db.settings, async () => {
-    const current = (await db.settings.get('workspace')) ?? DEFAULT_SETTINGS;
-    const settings = settingsSchema.parse({ ...current, ...patch });
-    await db.settings.put(settings);
-    return settings;
-  });
-}
-async function renameNotebook(previous: string, next: string): Promise<void> {
-  const name = next.trim();
-  if (!name) throw new WorkspaceError('invalid', 'Notebook name is required.');
-  await db.transaction('rw', db.settings, db.notes, async () => {
-    await db.notes.where('notebook').equals(previous).modify({ notebook: name });
-    const current = (await db.settings.get('workspace')) ?? DEFAULT_SETTINGS;
-    await db.settings.put({
-      ...current,
-      notebooks: [
-        ...new Set([...(current.notebooks ?? ['General']).filter((n) => n !== previous), name]),
-      ],
-    });
-  });
-}
-async function deleteNotebook(name: string): Promise<void> {
-  if (name === 'General')
-    throw new WorkspaceError('invalid', 'The General notebook is kept for unfiled notes.');
-  await db.transaction('rw', db.settings, db.notes, async () => {
-    await db.notes.where('notebook').equals(name).modify({ notebook: 'General' });
-    const current = (await db.settings.get('workspace')) ?? DEFAULT_SETTINGS;
-    await db.settings.put({
-      ...current,
-      notebooks: [...new Set(['General', ...(current.notebooks ?? []).filter((n) => n !== name)])],
-    });
-  });
-}
 async function createDailyEntry(input: DailyEntryCreateInput): Promise<DailyEntry> {
   return db.transaction('rw', db.tables, async () => {
     if (input.planId) {
@@ -137,12 +113,24 @@ async function createDailyEntry(input: DailyEntryCreateInput): Promise<DailyEntr
         .first();
       if (existing) return existing;
     }
-    return connectEntry(dailyEntrySchema.parse({ ...input, ...recordMeta() }));
+    return connectEntry(
+      dailyEntrySchema.parse({
+        ...input,
+        ...recordMeta(),
+        businessUnit: await inheritedBusinessUnit(input),
+      }),
+    );
   });
 }
 async function createPlan(input: PlanCreateInput): Promise<Plan> {
-  return db.transaction('rw', db.tables, () =>
-    connectPlan(planSchema.parse({ ...input, ...recordMeta() })),
+  return db.transaction('rw', db.tables, async () =>
+    connectPlan(
+      planSchema.parse({
+        ...input,
+        ...recordMeta(),
+        businessUnit: await inheritedBusinessUnit(input),
+      }),
+    ),
   );
 }
 async function updatePlan(id: string, patch: Partial<PlanCreateInput>): Promise<Plan> {
@@ -202,7 +190,7 @@ async function deleteDailyEntry(id: string): Promise<void> {
   });
 }
 export const actions = {
-  createTask: tasks.create,
+  createTask,
   updateTask: tasks.update,
   deleteTask,
   createProject: projects.create,
@@ -221,6 +209,7 @@ export const actions = {
   updateDailyEntry,
   deleteDailyEntry,
   updateSettings,
+  renameBusinessUnit,
   renameNotebook,
   deleteNotebook,
 };

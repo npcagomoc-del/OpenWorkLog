@@ -1,4 +1,14 @@
-import { DEFAULT_SETTINGS, recordMeta, type Workspace } from '../domain/models';
+import {
+  DEFAULT_SETTINGS,
+  dailyEntrySchema,
+  planSchema,
+  projectSchema,
+  recordMeta,
+  settingsSchema,
+  taskSchema,
+  timerSchema,
+  type Workspace,
+} from '../domain/models';
 import { todayKey } from '../domain/time';
 import { actions } from './actions';
 import { reconcileWorkLinks } from './connectedWork';
@@ -28,14 +38,14 @@ export async function readWorkspace(): Promise<Workspace> {
       db.settings.get('workspace'),
     ]);
   return {
-    tasks,
-    projects,
+    tasks: tasks.map((record) => taskSchema.parse(record)),
+    projects: projects.map((record) => projectSchema.parse(record)),
     categories,
     notes,
-    plans,
-    dailyEntries,
-    timers,
-    settings: settings ?? DEFAULT_SETTINGS,
+    plans: plans.map((record) => planSchema.parse(record)),
+    dailyEntries: dailyEntries.map((record) => dailyEntrySchema.parse(record)),
+    timers: timers.map((record) => timerSchema.parse(record)),
+    settings: settingsSchema.parse(settings ?? DEFAULT_SETTINGS),
   };
 }
 export async function clearDemoData(): Promise<void> {

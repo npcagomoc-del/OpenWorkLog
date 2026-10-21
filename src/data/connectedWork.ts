@@ -8,9 +8,11 @@ import {
 } from '../domain/models';
 import { db } from './db';
 import { checkLinks } from './relations';
+import { inheritedBusinessUnit } from './workUnits';
 
 type Work = Pick<
   Plan,
+  | 'businessUnit'
   | 'title'
   | 'date'
   | 'taskId'
@@ -34,6 +36,7 @@ async function taskFor(
     createdAt: work.createdAt,
     updatedAt: work.updatedAt,
     title: work.title,
+    businessUnit: work.businessUnit ?? '',
     description: details.description,
     status,
     priority: 'Normal',
@@ -53,6 +56,10 @@ async function taskFor(
 }
 export async function connectPlan(plan: Plan): Promise<Plan> {
   const previous = await db.plans.get(plan.id);
+  plan = {
+    ...plan,
+    businessUnit: previous ? (plan.businessUnit ?? '') : await inheritedBusinessUnit(plan),
+  };
   const moved =
     previous &&
     (previous.date !== plan.date ||
@@ -90,9 +97,13 @@ export async function connectPlan(plan: Plan): Promise<Plan> {
   return connected;
 }
 export async function connectEntry(entry: DailyEntry): Promise<DailyEntry> {
+  const previous = await db.dailyEntries.get(entry.id);
+  entry = {
+    ...entry,
+    businessUnit: previous ? (entry.businessUnit ?? '') : await inheritedBusinessUnit(entry),
+  };
   await checkLinks(entry);
   if (entry.isLunch) {
-    await checkLinks(entry);
     await db.dailyEntries.put(entry);
     return entry;
   }
@@ -132,6 +143,7 @@ export async function connectEntry(entry: DailyEntry): Promise<DailyEntry> {
       endMinute: entry.plannedEnd,
       taskId,
       taskDetached: taskId ? false : entry.taskDetached,
+      businessUnit: entry.businessUnit ?? '',
       projectId: entry.projectId,
       categoryId: entry.categoryId,
       notes: matching?.notes ?? '',

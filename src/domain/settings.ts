@@ -1,9 +1,28 @@
 import { z } from 'zod';
+import { statusSchema } from './status';
 
 const minute = z.number().int().min(0).max(1440);
 export const settingsSchema = z
   .object({
     id: z.literal('workspace'),
+    businessUnits: z.array(z.string().trim().min(1)).default([]),
+    statusColors: z.partialRecord(statusSchema, z.string().regex(/^#[0-9a-fA-F]{6}$/)).default({}),
+    taskView: z
+      .object({
+        view: z.enum(['list', 'table', 'board']),
+        groupBy: z.enum(['status', 'category', 'project', 'businessUnit']),
+        hiddenGroups: z.array(z.string()),
+        fields: z.object({
+          priority: z.boolean().default(true),
+          category: z.boolean(),
+          project: z.boolean(),
+          businessUnit: z.boolean(),
+          dueDate: z.boolean(),
+          assignee: z.boolean(),
+          latestUpdate: z.boolean(),
+        }),
+      })
+      .optional(),
     ownerName: z.string().optional(),
     connectedWorkVersion: z.literal(1).optional(),
     notebooks: z.array(z.string().trim().min(1)).optional(),
@@ -40,6 +59,8 @@ export const settingsSchema = z
 export type Settings = Readonly<z.infer<typeof settingsSchema>>;
 export const DEFAULT_SETTINGS: Settings = {
   id: 'workspace',
+  businessUnits: [],
+  statusColors: {},
   theme: 'system',
   connectedWorkVersion: 1,
   sidebarCollapsed: false,

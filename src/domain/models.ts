@@ -4,10 +4,11 @@ export type { Settings } from './settings';
 export { DEFAULT_SETTINGS, settingsSchema } from './settings';
 
 import { z } from 'zod';
+import { statusSchema } from './status';
 import { validTimerTimeline } from './timerValidity';
-export const STATUSES = ['Open', 'In Progress', 'Closed'] as const;
-export const statusSchema = z.enum(STATUSES);
-export type Status = z.infer<typeof statusSchema>;
+
+export type { Status } from './status';
+export { isTerminalStatus, STATUS_VALUES, STATUSES, statusSchema } from './status';
 export type Priority = 'Low' | 'Normal' | 'High';
 export type WorkType = 'task' | 'operational' | 'project';
 const id = z.string().min(1);
@@ -28,6 +29,7 @@ const metadata = {
 };
 export const taskSchema = z.object({
   ...metadata,
+  businessUnit: z.string().trim().default('').optional(),
   title: z.string().trim().min(1),
   description: z.string(),
   status: statusSchema,
@@ -44,6 +46,7 @@ export const taskSchema = z.object({
 });
 export const projectSchema = z.object({
   ...metadata,
+  businessUnit: z.string().trim().default('').optional(),
   name: z.string().trim().min(1),
   description: z.string(),
   status: statusSchema,
@@ -76,6 +79,7 @@ export const noteSchema = z.object({
 export const planSchema = z
   .object({
     ...metadata,
+    businessUnit: z.string().trim().default('').optional(),
     title: z.string().trim().min(1),
     date,
     startMinute: minute,
@@ -99,6 +103,7 @@ export const dailyEntrySchema = z
     taskDetached: z.boolean().optional(),
     projectId: link,
     categoryId: link,
+    businessUnit: z.string().trim().default('').optional(),
     title: z.string().trim().min(1),
     ticket: z.string(),
     projectName: z.string(),
@@ -137,6 +142,7 @@ export const dailyEntrySchema = z
 export const timerSchema = z
   .object({
     ...metadata,
+    businessUnit: z.string().trim().default('').optional(),
     title: z.string().trim().min(1),
     taskId: link,
     taskDetached: z.boolean().optional(),
@@ -147,6 +153,7 @@ export const timerSchema = z
     sourceEntryId: link.optional(),
     sourceDetails: z
       .object({
+        businessUnit: z.string().trim().default('').optional(),
         ticket: z.string(),
         projectName: z.string(),
         projectLink: z.string(),
