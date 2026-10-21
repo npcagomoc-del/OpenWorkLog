@@ -1,6 +1,12 @@
-import { db } from './db';
 import { WorkspaceError } from '../domain/models';
+import { db } from './db';
 export async function checkLinks(record: object): Promise<void> {
+  if (
+    'sourceEntryId' in record &&
+    typeof record.sourceEntryId === 'string' &&
+    !(await db.dailyEntries.get(record.sourceEntryId))
+  )
+    throw new WorkspaceError('linked', 'The linked daily entry no longer exists.');
   if (
     'taskId' in record &&
     typeof record.taskId === 'string' &&

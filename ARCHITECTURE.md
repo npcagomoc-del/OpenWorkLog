@@ -51,3 +51,17 @@ Timer UTC segments must be chronological and non-overlapping; only a running tim
 startTimer also accepts optional planId. It captures plan date/times in optional timer plannedDate/plannedStart/plannedEnd fields. timerEntryDraft carries planId, and only copies planned times when actual date matches planned date. Saving upserts the daily entry for planId plus date, preserving its ID. Repeated plan sessions consolidate UTC segments into one saved timer owner and keep overnight entries linked. Calendar plan deletion clears timer and daily planId links while preserving the recorded times.
 
 Daily CSV Productive Minutes is rounded to two decimal places for reporting; Active Segments uses HH:mm:ss bounds. JSON backup retains exact numeric precision.
+
+## Connected work update
+
+My Tasks is the canonical work list. `actions.createPlan` and non-lunch `actions.createDailyEntry` atomically create a task when no task is selected. A daily entry with a planned interval creates or reuses its explicit linked calendar plan; existing `planId`/`taskId` links are reused rather than matching unrelated titles. Lunch/break entries do not generate tasks or work plans. Plan rescheduling updates linked planned-only daily entries; saved actual history retains its date and times. Auto-created tasks have no deadline until the user sets one in My Tasks; scheduled calendar dates remain separate from task deadlines.
+
+Legacy work links are repaired once, in an atomic transaction, when `Settings.connectedWorkVersion` is absent. The version marker is retained in JSON backups. Newly created workspaces and newly restored backups with the marker do not recreate intentionally deleted tasks. Restoring a valid older backup upgrades its links once. Work metadata and demo flags are retained; no historical records are deleted.
+
+Timers accept optional `sourceEntryId`; it is distinct from saved reciprocal `entryId` ownership. Starting from a daily entry captures its task, plan, planned date/times and safe descriptive fields. `sourceDetails` holds ticket/project/subtask context. Review work text is new session text and is appended to retained history. Saving upserts the source entry for its actual date; overnight sessions create date-specific daily entries that share one canonical task. Timer save never closes the parent task.
+
+Deleting a calendar plan sets optional `calendarDetached` on its remaining daily/timer records. This preserves retained planned times without recreating the deleted plan during a later description edit or timer save. An explicit change to the daily planned interval can attach a new plan. Deleting a source daily entry clears `Timer.sourceEntryId` atomically. Backup validation checks the optional source reference and continues accepting older version-1 backups without these optional fields.
+
+Settings validation and defaults now live in `src/domain/settings.ts`, re-exported through `models.ts`. Theme supports `black` for Super dark, alongside light, dark and system.
+
+Optional taskDetached markers on Plan, DailyEntry and Timer preserve explicit Task deletion through ordinary history edits, plan rescheduling, timer starts/saves, reload and backup restore. Selecting an existing task explicitly reattaches the work. Manual planned bounds added at timer review apply only to the selected review date; other overnight dates retain only their own existing or captured planned context.

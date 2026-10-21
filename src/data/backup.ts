@@ -1,17 +1,19 @@
 import { z } from 'zod';
-import { db } from './db';
-import { readWorkspace } from './workspace';
 import {
-  taskSchema,
-  projectSchema,
   categorySchema,
+  dailyEntrySchema,
   noteSchema,
   planSchema,
-  dailyEntrySchema,
-  timerSchema,
+  projectSchema,
   settingsSchema,
+  taskSchema,
+  timerSchema,
   WorkspaceError,
 } from '../domain/models';
+import { reconcileWorkLinks } from './connectedWork';
+import { db } from './db';
+import { readWorkspace } from './workspace';
+
 const backupSchema = z.object({
   format: z.literal('OpenWorkLog'),
   version: z.literal(1),
@@ -93,6 +95,9 @@ export function parseBackup(text: string): Backup {
     if (timer.planId && !plans.has(timer.planId))
       throw new WorkspaceError('invalid', 'Backup has a missing calendar plan reference.');
   for (const timer of data.timers)
+    if (timer.sourceEntryId && !entries.has(timer.sourceEntryId))
+      throw new WorkspaceError('invalid', 'Backup has a missing timer source entry reference.');
+  for (const timer of data.timers)
     if (timer.entryId && !entries.has(timer.entryId))
       throw new WorkspaceError('invalid', 'Backup has a missing daily entry reference.');
   for (const timer of data.timers) {
@@ -145,5 +150,6 @@ export async function restoreBackup(text: string): Promise<void> {
     await db.dailyEntries.bulkAdd(data.dailyEntries);
     await db.timers.bulkAdd(data.timers);
     await db.settings.put(data.settings);
+    await reconcileWorkLinks();
   });
 }

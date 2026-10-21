@@ -1,3 +1,8 @@
+import type { Settings } from './settings';
+
+export type { Settings } from './settings';
+export { DEFAULT_SETTINGS, settingsSchema } from './settings';
+
 import { z } from 'zod';
 import { validTimerTimeline } from './timerValidity';
 export const STATUSES = ['Open', 'In Progress', 'Closed'] as const;
@@ -76,6 +81,7 @@ export const planSchema = z
     startMinute: minute,
     endMinute: minute,
     taskId: link,
+    taskDetached: z.boolean().optional(),
     projectId: link,
     categoryId: link,
     notes: z.string(),
@@ -90,6 +96,7 @@ export const dailyEntrySchema = z
     actualStart: minute.nullable(),
     actualEnd: minute.nullable(),
     taskId: link,
+    taskDetached: z.boolean().optional(),
     projectId: link,
     categoryId: link,
     title: z.string().trim().min(1),
@@ -103,6 +110,7 @@ export const dailyEntrySchema = z
     isLunch: z.boolean(),
     timerId: link,
     planId: link.optional(),
+    calendarDetached: z.boolean().optional(),
     actualSegments: z
       .array(
         z
@@ -131,9 +139,20 @@ export const timerSchema = z
     ...metadata,
     title: z.string().trim().min(1),
     taskId: link,
+    taskDetached: z.boolean().optional(),
     projectId: link,
     categoryId: link,
     planId: link.optional(),
+    calendarDetached: z.boolean().optional(),
+    sourceEntryId: link.optional(),
+    sourceDetails: z
+      .object({
+        ticket: z.string(),
+        projectName: z.string(),
+        projectLink: z.string(),
+        subtasks: z.string(),
+      })
+      .optional(),
     plannedDate: date.nullable().optional(),
     plannedStart: minute.nullable().optional(),
     plannedEnd: minute.nullable().optional(),
@@ -155,41 +174,6 @@ export const timerSchema = z
     validTimerTimeline,
     'Timer segments must be ordered, non-overlapping, and match the timer state',
   );
-export const settingsSchema = z
-  .object({
-    id: z.literal('workspace'),
-    ownerName: z.string().optional(),
-    notebooks: z.array(z.string().trim().min(1)).optional(),
-    theme: z.enum(['light', 'dark', 'system']),
-    sidebarCollapsed: z.boolean(),
-    textSize: z.enum(['normal', 'large']),
-    workStart: minute,
-    workEnd: minute,
-    lunchStart: minute,
-    lunchEnd: minute,
-    timezone: z
-      .string()
-      .min(1)
-      .refine((value) => {
-        try {
-          new Intl.DateTimeFormat('en', { timeZone: value });
-          return true;
-        } catch (error) {
-          if (error instanceof RangeError) return false;
-          throw error;
-        }
-      }, 'Choose a valid IANA timezone'),
-    timeFormat: z.enum(['12h', '24h']),
-    typeLabels: z.object({
-      task: z.string().trim().min(1),
-      operational: z.string().trim().min(1),
-      project: z.string().trim().min(1),
-    }),
-    onboardingComplete: z.boolean(),
-    weekStartsOn: z.union([z.literal(0), z.literal(1)]),
-  })
-  .refine((v) => v.workEnd > v.workStart, 'Work end must follow start')
-  .refine((v) => v.lunchEnd > v.lunchStart, 'Lunch end must follow start');
 export type Task = Readonly<z.infer<typeof taskSchema>>;
 export type Project = Readonly<z.infer<typeof projectSchema>>;
 export type Category = Readonly<z.infer<typeof categorySchema>>;
@@ -197,7 +181,6 @@ export type Note = Readonly<z.infer<typeof noteSchema>>;
 export type Plan = Readonly<z.infer<typeof planSchema>>;
 export type DailyEntry = Readonly<z.infer<typeof dailyEntrySchema>>;
 export type Timer = Readonly<z.infer<typeof timerSchema>>;
-export type Settings = Readonly<z.infer<typeof settingsSchema>>;
 export type CreateInput<T> = Omit<T, 'id' | 'createdAt' | 'updatedAt' | 'demo'>;
 export type TaskCreateInput = CreateInput<Task>;
 export type ProjectCreateInput = CreateInput<Project>;
@@ -214,21 +197,6 @@ export type Workspace = {
   readonly dailyEntries: readonly DailyEntry[];
   readonly timers: readonly Timer[];
   readonly settings: Settings;
-};
-export const DEFAULT_SETTINGS: Settings = {
-  id: 'workspace',
-  theme: 'system',
-  sidebarCollapsed: false,
-  textSize: 'normal',
-  workStart: 480,
-  workEnd: 1020,
-  lunchStart: 720,
-  lunchEnd: 780,
-  timezone: 'Asia/Manila',
-  timeFormat: '24h',
-  typeLabels: { task: 'Task', operational: 'Operational', project: 'Project' },
-  onboardingComplete: false,
-  weekStartsOn: 1,
 };
 export class WorkspaceError extends Error {
   constructor(

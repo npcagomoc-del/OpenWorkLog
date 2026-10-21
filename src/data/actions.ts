@@ -1,23 +1,27 @@
 import type { Table } from 'dexie';
 import type { ZodType } from 'zod';
+import {
+  type CreateInput,
+  categorySchema,
+  type DailyEntry,
+  type DailyEntryCreateInput,
+  DEFAULT_SETTINGS,
+  dailyEntrySchema,
+  noteSchema,
+  type Plan,
+  type PlanCreateInput,
+  planSchema,
+  projectSchema,
+  recordMeta,
+  type Settings,
+  settingsSchema,
+  taskSchema,
+  WorkspaceError,
+} from '../domain/models';
+import { connectEntry, connectPlan } from './connectedWork';
 import { db } from './db';
 import { checkLinks } from './relations';
-import {
-  taskSchema,
-  projectSchema,
-  categorySchema,
-  noteSchema,
-  planSchema,
-  dailyEntrySchema,
-  settingsSchema,
-  recordMeta,
-  WorkspaceError,
-  DEFAULT_SETTINGS,
-  type CreateInput,
-  type Settings,
-  type DailyEntryCreateInput,
-  type DailyEntry,
-} from '../domain/models';
+
 function repository<
   T extends {
     readonly id: string;
@@ -54,15 +58,13 @@ const tasks = repository(db.tasks, taskSchema);
 const projects = repository(db.projects, projectSchema);
 const categories = repository(db.categories, categorySchema);
 const notes = repository(db.notes, noteSchema);
-const plans = repository(db.plans, planSchema);
-const entries = repository(db.dailyEntries, dailyEntrySchema);
 async function deleteTask(id: string): Promise<void> {
   await db.transaction('rw', db.tables, async () => {
     await db.tasks.delete(id);
     await db.notes.where('taskId').equals(id).modify({ taskId: null });
-    await db.plans.where('taskId').equals(id).modify({ taskId: null });
-    await db.dailyEntries.where('taskId').equals(id).modify({ taskId: null });
-    await db.timers.where('taskId').equals(id).modify({ taskId: null });
+    await db.plans.where('taskId').equals(id).modify({ taskId: null, taskDetached: true });
+    await db.dailyEntries.where('taskId').equals(id).modify({ taskId: null, taskDetached: true });
+    await db.timers.where('taskId').equals(id).modify({ taskId: null, taskDetached: true });
   });
 }
 async function deleteProject(id: string): Promise<void> {
@@ -135,18 +137,58 @@ async function createDailyEntry(input: DailyEntryCreateInput): Promise<DailyEntr
         .first();
       if (existing) return existing;
     }
-    return entries.create(input);
+    return connectEntry(dailyEntrySchema.parse({ ...input, ...recordMeta() }));
+  });
+}
+async function createPlan(input: PlanCreateInput): Promise<Plan> {
+  return db.transaction('rw', db.tables, () =>
+    connectPlan(planSchema.parse({ ...input, ...recordMeta() })),
+  );
+}
+async function updatePlan(id: string, patch: Partial<PlanCreateInput>): Promise<Plan> {
+  return db.transaction('rw', db.tables, async () => {
+    const previous = await db.plans.get(id);
+    if (!previous) throw new WorkspaceError('missing', 'This plan no longer exists.');
+    return connectPlan(
+      planSchema.parse({ ...previous, ...patch, updatedAt: new Date().toISOString() }),
+    );
+  });
+}
+async function updateDailyEntry(
+  id: string,
+  patch: Partial<DailyEntryCreateInput>,
+): Promise<DailyEntry> {
+  return db.transaction('rw', db.tables, async () => {
+    const previous = await db.dailyEntries.get(id);
+    if (!previous) throw new WorkspaceError('missing', 'This entry no longer exists.');
+    return connectEntry(
+      dailyEntrySchema.parse({
+        ...previous,
+        ...patch,
+        ...((patch.plannedStart !== undefined && patch.plannedStart !== previous.plannedStart) ||
+        (patch.plannedEnd !== undefined && patch.plannedEnd !== previous.plannedEnd) ||
+        patch.planId
+          ? { calendarDetached: false }
+          : {}),
+        updatedAt: new Date().toISOString(),
+      }),
+    );
   });
 }
 async function deletePlan(id: string): Promise<void> {
   await db.transaction('rw', db.tables, async () => {
     await db.plans.delete(id);
-    await db.timers.filter((timer) => timer.planId === id).modify({ planId: null });
-    await db.dailyEntries.filter((entry) => entry.planId === id).modify({ planId: null });
+    await db.timers
+      .filter((timer) => timer.planId === id)
+      .modify({ planId: null, calendarDetached: true });
+    await db.dailyEntries
+      .filter((entry) => entry.planId === id)
+      .modify({ planId: null, calendarDetached: true });
   });
 }
 async function deleteDailyEntry(id: string): Promise<void> {
   await db.transaction('rw', db.dailyEntries, db.timers, async () => {
+    await db.timers.filter((timer) => timer.sourceEntryId === id).modify({ sourceEntryId: null });
     const entry = await db.dailyEntries.get(id);
     await db.dailyEntries.delete(id);
     if (entry?.timerId) {
@@ -172,11 +214,11 @@ export const actions = {
   createNote: notes.create,
   updateNote: notes.update,
   deleteNote: notes.remove,
-  createPlan: plans.create,
-  updatePlan: plans.update,
+  createPlan,
+  updatePlan,
   deletePlan,
   createDailyEntry,
-  updateDailyEntry: entries.update,
+  updateDailyEntry,
   deleteDailyEntry,
   updateSettings,
   renameNotebook,

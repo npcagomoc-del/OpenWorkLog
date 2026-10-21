@@ -1,15 +1,17 @@
+import {
+  type DailyEntry,
+  type DailyEntryCreateInput,
+  DEFAULT_SETTINGS,
+  dailyEntrySchema,
+  recordMeta,
+  timerSchema,
+  WorkspaceError,
+} from '../domain/models';
+import { timerSegmentsByDate } from '../domain/timerSegments';
+import { connectEntry } from './connectedWork';
 import { db } from './db';
 import { checkLinks } from './relations';
-import { timerSegmentsByDate } from '../domain/timerSegments';
-import {
-  DEFAULT_SETTINGS,
-  recordMeta,
-  WorkspaceError,
-  timerSchema,
-  dailyEntrySchema,
-  type DailyEntryCreateInput,
-  type DailyEntry,
-} from '../domain/models';
+
 function recordedSegments(entry: DailyEntry | undefined) {
   return (
     entry?.actualSegments ??
@@ -30,11 +32,14 @@ export async function saveTimerEntry(id: string, input: DailyEntryCreateInput): 
       throw new WorkspaceError('timer', 'Stop the timer before saving.');
     const settings = (await db.settings.get('workspace')) ?? DEFAULT_SETTINGS;
     const originalDates = timerSegmentsByDate(timer, settings.timezone);
-    const plannedEntries = timer.planId
-      ? await db.dailyEntries
-          .filter((entry) => entry.planId === timer.planId && originalDates.has(entry.date))
-          .toArray()
-      : [];
+    const plannedEntries = await db.dailyEntries
+      .filter(
+        (entry) =>
+          originalDates.has(entry.date) &&
+          (entry.id === timer.sourceEntryId ||
+            Boolean(timer.planId && entry.planId === timer.planId)),
+      )
+      .toArray();
     const priorOwnerIds = new Set(
       plannedEntries.flatMap((entry) => (entry.timerId ? [entry.timerId] : [])),
     );
@@ -50,6 +55,7 @@ export async function saveTimerEntry(id: string, input: DailyEntryCreateInput): 
     });
     const dates = new Set([...originalDates.keys(), ...priorEntries.map((entry) => entry.date)]);
     let firstId: string | null = null;
+    let taskId = timer.taskId ?? input.taskId;
     for (const date of dates) {
       const existing = [...plannedEntries, ...priorEntries].find((entry) => entry.date === date);
       if (!originalDates.has(date) && existing) {
@@ -63,6 +69,7 @@ export async function saveTimerEntry(id: string, input: DailyEntryCreateInput): 
       const base = { ...existing, ...input };
       const entry = dailyEntrySchema.parse({
         ...base,
+        taskId: taskId ?? existing?.taskId ?? null,
         workDone: joined(existing?.workDone, input.workDone),
         remarks: joined(existing?.remarks, input.remarks),
         ticket: input.ticket || existing?.ticket || '',
@@ -82,18 +89,18 @@ export async function saveTimerEntry(id: string, input: DailyEntryCreateInput): 
         timerId: id,
         plannedStart:
           existing?.plannedStart ??
-          (timer.plannedDate === date
-            ? (timer.plannedStart ?? null)
-            : timer.planId
-              ? null
-              : input.plannedStart),
+          (date === input.date
+            ? input.plannedStart
+            : timer.plannedDate === date
+              ? (timer.plannedStart ?? null)
+              : null),
         plannedEnd:
           existing?.plannedEnd ??
-          (timer.plannedDate === date
-            ? (timer.plannedEnd ?? null)
-            : timer.planId
-              ? null
-              : input.plannedEnd),
+          (date === input.date
+            ? input.plannedEnd
+            : timer.plannedDate === date
+              ? (timer.plannedEnd ?? null)
+              : null),
         actualStart: Math.floor(Math.min(...segments.map((segment) => segment.startMinute))),
         actualEnd: Math.min(
           1440,
@@ -105,11 +112,17 @@ export async function saveTimerEntry(id: string, input: DailyEntryCreateInput): 
         actualSegments: segments,
       });
       await checkLinks(entry);
-      await db.dailyEntries.put(entry);
-      firstId ??= entry.id;
+      const connected = await connectEntry(entry);
+      firstId ??= connected.id;
+      taskId ??= connected.taskId;
     }
     if (!firstId) throw new WorkspaceError('timer', 'This timer has no recorded time.');
     await db.timers.bulkDelete([...priorOwnerIds]);
-    await db.timers.put({ ...combined, entryId: firstId, updatedAt: new Date().toISOString() });
+    await db.timers.put({
+      ...combined,
+      taskId,
+      entryId: firstId,
+      updatedAt: new Date().toISOString(),
+    });
   });
 }

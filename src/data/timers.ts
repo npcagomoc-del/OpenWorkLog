@@ -1,38 +1,62 @@
-import { db } from './db';
-import { checkLinks } from './relations';
 import {
+  type DailyEntryCreateInput,
   DEFAULT_SETTINGS,
   recordMeta,
-  WorkspaceError,
-  timerSchema,
-  type Timer,
   type Settings,
-  type DailyEntryCreateInput,
+  type Timer,
+  timerSchema,
+  WorkspaceError,
 } from '../domain/models';
 import { todayKey } from '../domain/time';
 import { timerSegmentsByDate } from '../domain/timerSegments';
+import { connectEntry } from './connectedWork';
+import { db } from './db';
+import { checkLinks } from './relations';
+
 type StartInput = {
   readonly title: string;
   readonly taskId?: string | null;
   readonly projectId?: string | null;
   readonly categoryId?: string | null;
   readonly planId?: string | null;
+  readonly sourceEntryId?: string | null;
 };
 export async function startTimer(input: StartInput): Promise<Timer> {
   return db.transaction('rw', db.tables, async () => {
     if (await db.timers.filter((t) => t.entryId === null).count())
       throw new WorkspaceError('timer', 'Review or discard the current timer first.');
-    const plan = input.planId ? await db.plans.get(input.planId) : undefined;
+    const source = input.sourceEntryId ? await db.dailyEntries.get(input.sourceEntryId) : undefined;
+    if (input.sourceEntryId && !source)
+      throw new WorkspaceError('missing', 'This daily entry no longer exists.');
+    if (source?.isLunch) throw new WorkspaceError('timer', 'Choose a work activity for the timer.');
+    if (source && input.planId && source.planId !== input.planId)
+      throw new WorkspaceError('linked', 'Choose the plan linked to this daily entry.');
+    const entry = source ? await connectEntry(source) : undefined;
+    const planId = entry?.planId ?? input.planId ?? null;
+    const plan = planId ? await db.plans.get(planId) : undefined;
     const timer = timerSchema.parse({
       ...recordMeta(),
-      title: input.title,
-      taskId: input.taskId ?? plan?.taskId ?? null,
-      projectId: input.projectId ?? plan?.projectId ?? null,
-      categoryId: input.categoryId ?? plan?.categoryId ?? null,
-      planId: input.planId ?? null,
-      plannedDate: plan?.date ?? null,
-      plannedStart: plan?.startMinute ?? null,
-      plannedEnd: plan?.endMinute ?? null,
+      title: entry?.title ?? input.title,
+      taskId: entry?.taskId ?? input.taskId ?? (entry?.taskDetached ? null : plan?.taskId) ?? null,
+      taskDetached: entry?.taskDetached ?? plan?.taskDetached ?? false,
+      projectId: entry?.projectId ?? input.projectId ?? plan?.projectId ?? null,
+      categoryId: entry?.categoryId ?? input.categoryId ?? plan?.categoryId ?? null,
+      planId,
+      sourceEntryId: entry?.id ?? null,
+      calendarDetached: entry?.calendarDetached ?? false,
+      ...(entry
+        ? {
+            sourceDetails: {
+              ticket: entry.ticket,
+              projectName: entry.projectName,
+              projectLink: entry.projectLink,
+              subtasks: entry.subtasks,
+            },
+          }
+        : {}),
+      plannedDate: entry?.date ?? plan?.date ?? null,
+      plannedStart: entry?.plannedStart ?? plan?.startMinute ?? null,
+      plannedEnd: entry?.plannedEnd ?? plan?.endMinute ?? null,
       state: 'running',
       segments: [{ start: new Date().toISOString(), end: null }],
       entryId: null,
@@ -80,6 +104,7 @@ export function timerEntryDraft(
   return {
     date,
     planId: timer.planId ?? null,
+    calendarDetached: timer.calendarDetached ?? false,
     plannedStart: timer.plannedDate === date ? (timer.plannedStart ?? null) : null,
     plannedEnd: timer.plannedDate === date ? (timer.plannedEnd ?? null) : null,
     actualStart: first
@@ -96,13 +121,14 @@ export function timerEntryDraft(
       : null,
     actualSegments: segments,
     taskId: timer.taskId,
+    taskDetached: timer.taskDetached ?? false,
     projectId: timer.projectId,
     categoryId: timer.categoryId,
     title: timer.title,
-    ticket: '',
-    projectName: '',
-    projectLink: '',
-    subtasks: '',
+    ticket: timer.sourceDetails?.ticket ?? '',
+    projectName: timer.sourceDetails?.projectName ?? '',
+    projectLink: timer.sourceDetails?.projectLink ?? '',
+    subtasks: timer.sourceDetails?.subtasks ?? '',
     workDone: '',
     remarks: '',
     status: 'In Progress',

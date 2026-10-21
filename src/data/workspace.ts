@@ -1,7 +1,8 @@
-import { db } from './db';
-import { actions } from './actions';
-import { todayKey } from '../domain/time';
 import { DEFAULT_SETTINGS, recordMeta, type Workspace } from '../domain/models';
+import { todayKey } from '../domain/time';
+import { actions } from './actions';
+import { reconcileWorkLinks } from './connectedWork';
+import { db } from './db';
 export async function initializeWorkspace(): Promise<void> {
   await db.transaction('rw', db.settings, db.categories, async () => {
     if (await db.settings.get('workspace')) return;
@@ -12,6 +13,7 @@ export async function initializeWorkspace(): Promise<void> {
       { ...recordMeta(), name: 'Learning', color: '#9367d8', archived: false },
     ]);
   });
+  await reconcileWorkLinks();
 }
 export async function readWorkspace(): Promise<Workspace> {
   const [tasks, projects, categories, notes, plans, dailyEntries, timers, settings] =
