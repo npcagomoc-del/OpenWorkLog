@@ -35,6 +35,8 @@ Use these five statuses throughout the app. The colors shown here are defaults; 
 
 Choose **List** for compact task rows, **Table** for the tracker columns, or **Kanban** for grouped cards. Each task has one status control showing its current value. Open its title for full details and use its action menu for secondary actions.
 
+On a phone, choose **Focus board** above the Kanban board to give its lanes more room. The compact bar keeps **Group by**, **Filters**, **Cards**, **New task** and **Exit focus** available. **Filters** opens a sheet with search and Clear controls. Use **Board lanes → Previous lane / Next lane** or swipe horizontally to browse columns; the current lane position is shown. Open a card by its title or use **Actions → Move to** when dragging is inconvenient. Grouping and task data are preserved when you leave focus.
+
 In Kanban, use **Group by** to organize cards by Status, Category, Project or Business Unit. **Card details** controls the **Visible groups** and **Visible fields**. Hiding a group changes the view and does not delete its records. Filters still apply when you change the grouping.
 
 In Kanban, drag a task by its grip into another column. A drop changes only the field selected in **Group by**: for example, a Category drop changes the category while keeping the status. Use the unassigned column to clear an optional group value. The **Move to** menu offers the same destinations. With a mouse, move the handle a little to begin dragging. On a touch screen, hold the handle briefly (about 200 milliseconds), then move it. For a keyboard, focus the handle, press `Space` or `Enter` to pick up the task, use Right/Down for the next group or Left/Up for the previous group, then press `Space` or `Enter` to drop. `Esc` cancels. The status selector remains available as an alternative to dragging.
@@ -49,7 +51,7 @@ When saving non-break work in Daily log or Calendar, select an existing task if 
 
 A task created from a daily entry starts with that entry's status. A task created from a calendar plan starts Open. New tasks use your local profile name as the owner when set and leave the due date blank: a scheduled work date is not automatically a deadline. Set **By when** explicitly in My tasks when there is a deadline. You can also change the work type, title, owner and status there.
 
-When a daily entry has planned start/end times, it also creates or updates its linked calendar plan. Lunch/break entries do not create tracker tasks. Existing task titles and statuses are not overwritten by later daily entries or timer reviews; recorded activity titles and statuses remain separate work history. Finishing one session does not automatically close the overall task.
+When a daily entry has planned start/end times, it also creates or updates its linked calendar plan. Lunch/break entries do not create tracker tasks. Editing an existing linked non-break entry copies only shared fields you changed in that edit to the task: title, status, category, project, Business Unit, ticket and Work done (as the task's Latest update). The last explicit edit wins; sibling daily entries remain unchanged. Leaving a field untouched preserves a newer value on the task. Creating entries or saving a timer does not perform this sync, and finishing a session does not automatically close the task.
 
 On the first upgrade of an older workspace, the app links existing non-break activities that lack task links. This runs once. Later launches and backups from the upgraded workspace preserve intentionally removed task links rather than treating them as new standalone work to backfill again.
 
@@ -65,7 +67,11 @@ Use **Settings → Categories** to add a category and color, rename it, or archi
 
 ## Plan work on the calendar
 
-Open **Calendar**, choose a day, week or month view, and add a plan. Set its date, start/end times, title, linked task, project, category, optional **Business Unit / Requested for**, and notes. Plans describe intended time; they do not count as actual productive time.
+Open **Calendar**, choose a day, week or month view, and add a plan. On a phone, the regular calendar opens in Day view. Choose **Focus calendar** for a larger schedule with a seven-day date strip, Previous/Next date, **Calendar view options** (Today, Day, Week, Month), **Add plan** and **Exit calendar focus**. Set each plan's date, start/end times, title, linked task, project, category, optional **Business Unit / Requested for**, and notes. Plans describe intended time; they do not count as actual productive time.
+
+Calendar events use the linked task's current category color when linked. For an unlinked plan, the plan's saved category supplies the color. Changing or clearing the linked task's category updates the event cue; missing categories stay neutral. The category name remains visible so color is not the only identifier.
+
+On a new or edited plan, choosing or clearing **Category** also updates the linked task's category in My tasks. This changes only the category and does not change actual daily history. Rescheduling a plan or internal link maintenance does not update the task's category.
 
 Open a plan to:
 
@@ -152,7 +158,11 @@ Use **Export summary CSV** to download the displayed scope and summary figures. 
 
 ## Keep study notes
 
-Open **Notes** and create a study note. Choose a notebook, enter comma-separated tags, and write your notes. Use **Write / Preview** to check the result. Supported formatting includes `#` headings, `-` bullets, `- [ ]` checklists and `>` quotes. Raw HTML is treated as text.
+Open **Notes** and create a study note. Choose a notebook, enter comma-separated tags, and write your notes. Use **Write / Preview** to check the result. Supported formatting includes `#` headings, `-` bullets, `- [ ]` checklists and `>` quotes. Raw HTML is treated as text. Save the note, then choose **Add handwriting** to open its separate writing area; typed note text remains in **Edit note**.
+
+Use **Pen** or **Eraser** in the handwriting toolbar. Eraser removes a whole stroke when it touches it. **Undo handwriting** and **Redo handwriting** step through recent handwriting changes. **Handwriting options** contains Ink color (Black, Blue, Red or Green), Pen width (Fine, Medium or Bold), and **Draw with finger**. By default touch scrolls the paper; enable Draw with finger when you want to write by touch, which disables scrolling on the paper. Use **Expand writing area** to write in a larger dialog and **Close dialog** to return.
+
+Handwriting saves when you lift the pen. The status shows whether it is **Saved on this device**; if a save fails, the drawing remains available and **Save handwriting** retries it. Ink is stored with the note in this browser workspace and included in workspace backups. It works offline after the app has loaded and cached; it does not sync to another device. Pressure follows the pointer input reported by the browser, with a fallback when pressure is unavailable. Keep typed text for an accessible description; handwriting is not converted to text.
 
 Expand **Summary, review questions & references** to add a summary, review questions and references. The saved summary appears as **Key takeaway** in the reading view. Add an optional related task for context. Choose **Save note**; unsaved edits require a discard decision when closing the editor. Checklist items can be checked from the reading view. Study notes do not add work accomplishments or productive time.
 
@@ -207,7 +217,9 @@ Your records belong to this browser profile and URL on this device. They do not 
 
 ## Appearance and offline use
 
-In **Settings → Appearance**, choose Light, Dark, Super dark or System, text size, time display, week start and sidebar preference. Super dark uses near-black surfaces; System follows the device's light/dark preference. In **Settings → Status colors**, choose each status color with its picker or **Hex color** field. Check the Light, Dark and Super dark previews, then choose **Save status colors**. **Reset to defaults** restores the default palette. The app derives readable text and tints, and applies the palette to status controls and charts; the status names keep the meaning clear.
+In **Settings → Appearance**, choose Light, Dark, Super dark or System brightness separately from **Surface style**. Surface style offers **Default**, **Apple** (cool neutral surfaces) and **Warm** (Claude-inspired warm neutral surfaces). Choose **Customize button color** to set a custom action color, or **Restore default button color** to return to that style's default. Button/action colors do not change status or category colors. These settings save on this device and stay separate from the brightness choice. Super dark uses a black canvas; System follows the device's light/dark preference.
+
+In **Settings → Status colors**, choose each status color with its picker or **Hex color** field. Check the Light, Dark and Super dark previews, then choose **Save status colors**. **Reset to defaults** restores the default palette. The app derives readable text and tints, and applies the palette to status controls and charts; the status names keep the meaning clear. Calendar category colors are set separately in **Settings → Categories**.
 
 The toolbar theme control cycles through the four appearance options. Animations respect the device's reduced-motion preference.
 

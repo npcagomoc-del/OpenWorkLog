@@ -78,7 +78,7 @@ Installation is optional; supported browsers can also keep the production app av
 
 In **Settings**:
 
-- Choose Light, Dark, Super dark or System appearance and Comfortable or Large text.
+- Choose Light, Dark, Super dark or System brightness, then a Default, Apple or Warm (Claude-inspired) surface style. Set an optional Button color and choose Comfortable or Large text.
 - Set the working day and lunch times. Defaults are 08:00–17:00 and 12:00–13:00.
 - Set an IANA time zone, such as `Asia/Manila`, and save the schedule.
 - Set your local profile name and the labels for Task, Operational and Project work.

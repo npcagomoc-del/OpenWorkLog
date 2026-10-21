@@ -1,6 +1,14 @@
 # Verification record
 
-## Current v3 published release — 21 October 2026
+## Current v4 implementation record
+
+The current worktree adds mobile-focused Calendar Day and Kanban views, category-colored calendar events, handwriting in Study Notes, selectable surface presets and button color, and explicit changed-field synchronization from edited Daily entries to their linked My Tasks record. Typed notes remain separate. Timer review/save does not trigger the Daily-entry field sync. Ink and appearance settings are additive and legacy backups remain supported.
+
+Final test, review, accepted source, and actual publication facts are recorded in the sibling `../OpenWorkLog-QA-v4/finalrelease-summary.md` and `review-ledger.md`; use that record rather than the historical v3 material below.
+
+## Historical v3 verification and release records
+
+### Published v3 release — 21 October 2026
 
 The [production app](https://openworklog.npcagomoc-56b.workers.dev/) is deployed on Cloudflare Workers Static Assets, version `e83475a3`, with Ready status at 100%. Independent public verification passed 29 of 29 checks at `2026-10-21T08:15:41.355Z` using Chrome 155.0.8059.85. This section supersedes the historical candidate and v2 records below.
 
