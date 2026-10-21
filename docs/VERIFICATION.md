@@ -1,8 +1,33 @@
 # Verification record
 
-## Current v3 candidate — measured results, release verification pending
+## Current v3 published release — 21 October 2026
 
-This section records the compact tracker/Planner revision measured on 21 October 2026. It describes the audited candidate, not a claim that the final rebuilt release has been published or approved. Final publication status, URL and final evidence counts belong in the sibling `OpenWorkLog-QA-v3/finalrelease-summary.md` release summary when produced. The v2 record below is historical and must not be used as current v3 evidence.
+The [production app](https://openworklog.npcagomoc-56b.workers.dev/) is deployed on Cloudflare Workers Static Assets, version `e83475a3`, with Ready status at 100%. Independent public verification passed 29 of 29 checks at `2026-10-21T08:15:41.355Z` using Chrome 155.0.8059.85. This section supersedes the historical candidate and v2 records below.
+
+Accepted application Git commit: `2da0060cff2928c64c10bb8173768ad7a3915e22`. This Git SHA is distinct from file/source SHA-256 hashes. Production HTML SHA-256: `e37181ecad5820a034f1f0ca83c445044a1111e56cae95d1d44b254943839f1a`; main bundle: `index-CvRVxLBX.js`. Public verification confirmed the accepted HTML/bundle and unchanged local source/dist. Publication documentation is separate from this rendered application fingerprint. A GitHub source push requires its own proof and is not implied by deployment.
+
+| Final local release check | Result and scope |
+| --- | --- |
+| Unit/data tests | 112 passed across 25 files |
+| Production browser acceptance | 46 passed |
+| Fresh validated screenshots | 321 PNGs: 294 matrix and 27 detail frames |
+| Accessibility and geometry | 174 clean axe/geometry states |
+| Independent runtime scenarios | 20 passed |
+| Independent review | All five review lanes PASS for the accepted application commit |
+| Visual approval | Pass A and final Pass B retry both PASS across all 321 frames |
+
+The final Calendar performance recheck used six Lighthouse runs: mobile and desktop median performance were both 100. Earlier other-route benchmarks remain historical candidate measurements, not fresh final-build all-route results. Device checks use browser emulation; physical phone/tablet operation and other browser engines remain unverified. Automated checks are not full WCAG certification.
+
+### Published HTTPS and offline proof
+
+All ten public routes returned HTTP 200 with the accepted HTML. Cache/security headers, manifest/icons, release JavaScript, service-worker registration/control and precached assets passed. In an isolated synthetic workspace, a task saved through the UI survived an offline reload; an offline edit survived a second offline reload and reconnect. Phone layout fit, zero browser errors, no failed online application assets and unchanged local source/dist passed. Root personally opened the public demo dashboard; evidence is `public-dashboard-root.png`. These checks did not migrate or upload the user's private workspace.
+
+The sibling `../OpenWorkLog-QA-v3/` output contains `public-deployment-verification.json` and `.md`, `visual-b-approved-retry.md`, final capture/acceptance manifests, runtime/review evidence and the dashboard proof. The final publication index is `finalrelease-summary.md` there; use it to locate accepted inventories, publication proof and any separately verified source-push result. Check artifact hashes, times and scope when reproducing results.
+
+Records remain in IndexedDB for each browser profile/device/origin. HTTPS publishes the app shell; it does not add login, synchronization or automatic backup. Move records with a private JSON backup at the old URL and explicit restore at the production URL after reviewing replacement. Keep backups out of source and public assets.
+## Historical v3 candidate — superseded by the published release above
+
+This historical section records the earlier compact tracker/Planner candidate measured on 21 October 2026. Its pending statements describe that earlier point in time. It describes the audited candidate, not a claim that the final rebuilt release has been published or approved. Final publication status, URL and final evidence counts belong in the sibling `OpenWorkLog-QA-v3/finalrelease-summary.md` release summary when produced. The v2 record below is historical and must not be used as current v3 evidence.
 
 Git candidate commit: `46e97a689d98049d04f50ea25d66d1495777031e`. This is a Git SHA, distinct from the per-file/source SHA-256 hashes recorded in the v3 manifests. The measured production HTML SHA-256 is `3d78ab3aeb6a10b824db890b9f2d7a1254481e39c6d6981af0c1d5618e0b8d45`; main bundle is `index-C7cFBgr2.js`. Source and production HTML remained stable through these audits. The upcoming release also includes a two-line CSV help-copy correction and a timer snapshot regression repair: a selected plan's named or blank Business Unit must remain captured when its linked task later changes. Final rebuild, timer snapshot regression checks, fresh full browser recapture and final visual review remain release checks; the candidate measurements below retain their original provenance.
 

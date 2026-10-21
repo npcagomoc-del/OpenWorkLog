@@ -2,6 +2,8 @@
 
 An offline-first workspace for tasks, projects, daily work reports, a built-in planner, executive summaries and study notes. Developed by NPC.
 
+Open the [live app](https://openworklog.npcagomoc-56b.workers.dev/). To move records from an existing local URL, download a private JSON backup there, then restore it at this HTTPS URL after reviewing the replacement preview.
+
 OpenWorkLog stores records in this browser on this device using IndexedDB. It does not require API keys or a cloud account. A GitHub copy of the source code does not back up your work records.
 
 Read the [setup guide](docs/SETUP.md) for installation, hosting and offline setup, and the [user guide](docs/USER_GUIDE.md) for tasks, daily logs, timers, notes, CSV reports and backups.
