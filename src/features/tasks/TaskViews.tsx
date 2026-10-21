@@ -17,8 +17,7 @@ export function TaskViews(props: TaskViewProps) {
     ]
       .filter(Boolean)
       .join(' · ');
-  if (view === 'board')
-    return <TaskBoard key={`${preferences.groupBy}:${props.groups.map((group) => group.id).join('|')}`} {...props} />;
+  if (view === 'board') return <TaskBoard key={preferences.groupBy} {...props} />;
   if (view === 'table')
     return (
       <Card className="table-scroll">

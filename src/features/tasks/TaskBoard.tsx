@@ -11,7 +11,7 @@ import {
 } from '@dnd-kit/core';
 import { restrictToWindowEdges, snapCenterToCursor } from '@dnd-kit/modifiers';
 import { ChevronLeft, ChevronRight } from 'lucide-react';
-import { type ReactNode, useEffect, useRef, useState } from 'react';
+import { type ReactNode, useEffect, useLayoutEffect, useRef, useState } from 'react';
 import { createPortal } from 'react-dom';
 import { useShell } from '../../app/ShellContext';
 import { Card, StatusBadge } from '../../components/ui';
@@ -58,6 +58,8 @@ export function TaskBoard(props: TaskViewProps) {
   const { focusMode } = useShell();
   const viewport = useRef<HTMLElement>(null);
   const [laneIndex, setLaneIndex] = useState(0);
+  const visibleGroupIds = JSON.stringify(groups.map((group) => group.id));
+  const currentLane = Math.min(laneIndex, Math.max(groups.length - 1, 0));
   const keyboardGroup = useRef<TaskGroup | null>(null);
   const [focusTarget, setFocusTarget] = useState<{
     readonly id: string;
@@ -80,6 +82,14 @@ export function TaskBoard(props: TaskViewProps) {
       setFocusTarget(null);
     }
   }, [focusTarget, tasks]);
+  useLayoutEffect(() => {
+    if (visibleGroupIds === '[]') {
+      setLaneIndex(0);
+      return;
+    }
+    viewport.current?.scrollTo({ left: 0, behavior: 'instant' });
+    setLaneIndex(0);
+  }, [visibleGroupIds]);
   function goToLane(index: number) {
     const target = viewport.current?.querySelectorAll<HTMLElement>('.task-board-column')[index];
     const container = viewport.current;
@@ -150,9 +160,9 @@ export function TaskBoard(props: TaskViewProps) {
         . Hold briefly on touch, or use Actions → Move to.
       </p>}
       {focusMode && groups.length > 0 && <nav className="task-board-lane-nav" aria-label="Board lanes">
-        <button type="button" className="icon-button" aria-label="Previous lane" disabled={laneIndex === 0} onClick={() => goToLane(laneIndex - 1)}><ChevronLeft size={20} /></button>
-        <span className="task-board-lane-label" aria-live="polite">{groups[laneIndex]?.label ?? groups[0]?.label} <span className="muted">{laneIndex + 1} / {groups.length}</span></span>
-        <button type="button" className="icon-button" aria-label="Next lane" disabled={laneIndex >= groups.length - 1} onClick={() => goToLane(laneIndex + 1)}><ChevronRight size={20} /></button>
+        <button type="button" className="icon-button" aria-label="Previous lane" disabled={currentLane === 0} onClick={() => goToLane(currentLane - 1)}><ChevronLeft size={20} /></button>
+        <span className="task-board-lane-label" aria-live="polite">{groups[currentLane]?.label} <span className="muted">{currentLane + 1} / {groups.length}</span></span>
+        <button type="button" className="icon-button" aria-label="Next lane" disabled={currentLane >= groups.length - 1} onClick={() => goToLane(currentLane + 1)}><ChevronRight size={20} /></button>
       </nav>}
       <section ref={viewport} className="task-board-viewport" aria-label="Task board columns" onScroll={updateLaneIndex}>
         <div className="task-board">
