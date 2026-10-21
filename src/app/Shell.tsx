@@ -1,3 +1,4 @@
+import { isTerminalStatus } from '../domain/models';
 import { Suspense, useEffect, useState } from 'react';
 import { NavLink, Outlet, useLocation } from 'react-router-dom';
 import {
@@ -23,7 +24,12 @@ import { ShellContext } from './ShellContext';
 import { TimerDock } from './TimerDock';
 const nextTheme = { system: 'light', light: 'dark', dark: 'black', black: 'system' } as const;
 const themeIcons = { system: Monitor, light: Sun, dark: Moon, black: MoonStar } as const;
-const themeLabels = { system: 'system', light: 'light', dark: 'dark', black: 'super dark' } as const;
+const themeLabels = {
+  system: 'system',
+  light: 'light',
+  dark: 'dark',
+  black: 'super dark',
+} as const;
 export function Shell() {
   const { settings, tasks } = useWorkspace();
   const { toast } = useToast();
@@ -80,7 +86,7 @@ export function Shell() {
       const Icon = item.icon;
       const count =
         item.to === '/tasks'
-          ? tasks.filter((task) => !task.archived && task.status !== 'Closed').length
+          ? tasks.filter((task) => !task.archived && !isTerminalStatus(task.status)).length
           : 0;
       return (
         <NavLink
@@ -157,17 +163,19 @@ export function Shell() {
             <div className="toolbar-actions">
               <TimerDock />
               <div className="search-control">
-              <button
-                type="button"
-                className="search-trigger"
-                aria-label="Search tasks and notes"
-                aria-keyshortcuts="Control+K Meta+K"
-                onClick={() => setSearch(true)}
-              >
-                <Search size={18} />
-                <span>Search</span>
-              </button>
-              <span className="search-shortcut" aria-hidden="true"><kbd>Ctrl K</kbd></span>
+                <button
+                  type="button"
+                  className="search-trigger"
+                  aria-label="Search tasks and notes"
+                  aria-keyshortcuts="Control+K Meta+K"
+                  onClick={() => setSearch(true)}
+                >
+                  <Search size={18} />
+                  <span>Search</span>
+                </button>
+                <span className="search-shortcut" aria-hidden="true">
+                  <kbd>Ctrl K</kbd>
+                </span>
               </div>
               <IconButton
                 className="focus-toggle"

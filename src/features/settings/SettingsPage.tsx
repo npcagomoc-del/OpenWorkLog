@@ -3,6 +3,8 @@ import { Notice, PageHeader, Spinner, useToast } from '../../components/ui';
 import { actions } from '../../data/actions';
 import { useWorkspace } from '../../data/useWorkspace';
 import type { Settings } from '../../domain/models';
+import { StatusColorSettings } from './StatusColorSettings';
+import { BusinessUnitSettings } from './BusinessUnitSettings';
 import { AppearanceSettings } from './AppearanceSettings';
 import { BackupSettings } from './BackupSettings';
 import { CategorySettings } from './CategorySettings';
@@ -35,6 +37,8 @@ export default function SettingsPage() {
       <div className="settings-layout">
         <nav className="settings-nav" aria-label="Settings sections">
           <a href="#appearance">Appearance</a>
+          <a href="#status-colors">Status colors</a>
+          <a href="#business-units">Business Units</a>
           <a href="#schedule">Working day</a>
           <a href="#labels">Labels & profile</a>
           <a href="#categories">Categories</a>
@@ -42,6 +46,8 @@ export default function SettingsPage() {
         </nav>
         <div className="stack settings-content">
           <AppearanceSettings settings={settings} save={save} />
+          <StatusColorSettings key={JSON.stringify(settings.statusColors)} settings={settings} />
+          <BusinessUnitSettings settings={settings} save={save} />
           <ScheduleSettings
             key={`${settings.workStart}-${settings.workEnd}-${settings.lunchStart}-${settings.lunchEnd}-${settings.timezone}`}
             settings={settings}

@@ -294,3 +294,22 @@ input[type="color"] {
 [hidden] {
   display: none !important;
 }
+
+:root {
+  --hold: #79628e;
+  --hold-bg: #eae6ed;
+  --cancelled: #7c696d;
+  --cancelled-bg: #eae7e8;
+  --status-open-color: #0969c7;
+  --status-progress-color: #9b7613;
+  --status-hold-color: #79628e;
+  --status-closed-color: #207145;
+  --status-cancelled-color: #7c696d;
+}
+:root[data-theme="dark"],
+:root[data-theme="black"] {
+  --hold: #baa6ce;
+  --hold-bg: #302a38;
+  --cancelled: #c3adb3;
+  --cancelled-bg: #332c2f;
+}

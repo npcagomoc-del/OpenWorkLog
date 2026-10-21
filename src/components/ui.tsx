@@ -71,15 +71,7 @@ export function PageHeader({
     </header>
   );
 }
-export function StatusBadge({ status }: { readonly status: 'Open' | 'In Progress' | 'Closed' }) {
-  const tone = status === 'Open' ? 'open' : status === 'In Progress' ? 'progress' : 'closed';
-  return (
-    <span className={`status-badge status-badge--${tone}`}>
-      <span aria-hidden="true" />
-      {status}
-    </span>
-  );
-}
+export { StatusBadge, StatusControl } from './Status';
 export function Badge({
   children,
   tone = 'neutral',
