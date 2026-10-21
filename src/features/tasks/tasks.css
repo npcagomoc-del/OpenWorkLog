@@ -135,7 +135,7 @@
   line-height: 1.35;
 }
 .task-title:hover {
-  text-decoration: underline;
+  color: var(--accent);
 }
 .task-row-meta {
   margin-top: calc(-1 * var(--space-1));

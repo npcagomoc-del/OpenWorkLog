@@ -90,7 +90,6 @@
   margin-left: auto;
 }
 .task-board-card .task-title {
-  color: var(--text);
   display: -webkit-box;
   -webkit-line-clamp: 2;
   -webkit-box-orient: vertical;
