@@ -1,0 +1,35 @@
+import { test, expect } from '@playwright/test';
+import { openBlankWorkspace } from './workspace';
+
+test('study note creation editing review archive and deletion work through the editor', async ({ page }) => {
+  await openBlankWorkspace(page);
+  await page.goto('/notes');
+  await page.getByRole('button', { name: 'New note', exact: true }).click();
+  const editor = page.getByRole('dialog', { name: 'New study note' });
+  await editor.getByLabel('Note title', { exact: true }).fill('Backup recovery study');
+  await editor.getByLabel('Study notes', { exact: true }).fill('## Recovery practice\n- [ ] Restore a test file\n<script>alert("unsafe")</script>');
+  await editor.getByLabel('Tags', { exact: true }).fill('backup, recovery');
+  await editor.getByRole('button', { name: 'Save note', exact: true }).click();
+  await expect(editor).toBeHidden();
+  await expect(page.getByRole('heading', { name: 'Backup recovery study', exact: true })).toBeVisible();
+  await expect(page.locator('.note-reader script')).toHaveCount(0);
+  await page.getByRole('button', { name: 'Edit note', exact: true }).click();
+  const edit = page.getByRole('dialog', { name: 'Edit study note' });
+  await edit.getByLabel('Note title', { exact: true }).fill('Recovery checklist');
+  await edit.getByRole('button', { name: 'Save note', exact: true }).click();
+  await expect(edit).toBeHidden();
+  await page.reload();
+  await page.getByLabel('Search study notes', { exact: true }).fill('Recovery checklist');
+  await expect(page.getByRole('heading', { name: 'Recovery checklist', exact: true })).toBeVisible();
+  await page.getByRole('button', { name: 'Pin note', exact: true }).click();
+  await expect(page.getByRole('button', { name: 'Unpin note', exact: true })).toBeVisible();
+  await page.getByRole('button', { name: 'Mark reviewed', exact: true }).click();
+  await expect(page.locator('.note-reader-footer')).toContainText('Reviewed');
+  await page.getByRole('button', { name: 'Archive note', exact: true }).click();
+  await expect(page.getByRole('heading', { name: 'Recovery checklist', exact: true })).toHaveCount(0);
+  await page.getByRole('button', { name: 'Archived', exact: true }).click();
+  await expect(page.getByRole('heading', { name: 'Recovery checklist', exact: true })).toBeVisible();
+  await page.getByRole('button', { name: 'Delete note', exact: true }).click();
+  await page.getByRole('dialog', { name: 'Delete study note?' }).getByRole('button', { name: 'Delete note', exact: true }).click();
+  await expect(page.getByRole('heading', { name: 'Recovery checklist', exact: true })).toHaveCount(0);
+});

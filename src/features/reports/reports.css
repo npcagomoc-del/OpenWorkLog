@@ -1,0 +1,11 @@
+.report-filters { display: grid; grid-template-columns: minmax(0, 1fr) minmax(0, 1fr) auto; align-items: end; gap: var(--space-4); max-width: 42rem; }
+.report-checkbox { display: flex; align-items: center; gap: var(--space-2); min-height: 44px; font-size: var(--text-sm); }
+.report-checkbox input { width: 20px; height: 20px; }
+.report-preview { overflow: hidden; }
+.report-preview td { vertical-align: top; }
+.report-description { min-width: 13rem; max-width: 24rem; white-space: pre-wrap; overflow-wrap: anywhere; }
+.report-preview td > .badge { display: table; margin-top: var(--space-2); }
+@media (max-width: 600px) { .report-filters { grid-template-columns: 1fr; } }
+.report-preview .data-table { min-width: 54rem; }
+.report-preview th, .report-preview td:first-child, .report-preview td:nth-child(4), .report-preview td:nth-child(5) { white-space: nowrap; }
+.report-preview td:nth-child(2) { min-width: 12rem; }

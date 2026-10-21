@@ -1,0 +1,3 @@
+# The static app shell contains no workspace records. Records stay in local browser storage.
+User-agent: *
+Allow: /

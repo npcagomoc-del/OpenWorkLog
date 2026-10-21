@@ -1,0 +1,129 @@
+.settings-layout {
+  display: grid;
+  grid-template-columns: 11rem minmax(0, 1fr);
+  gap: var(--space-6);
+  align-items: start;
+}
+.settings-nav {
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-1);
+  position: sticky;
+  top: var(--space-4);
+}
+.settings-nav a {
+  display: flex;
+  align-items: center;
+  min-height: 44px;
+  padding: var(--space-3);
+  border-radius: var(--radius-sm);
+  color: var(--muted);
+  text-decoration: none;
+}
+.settings-nav a:hover {
+  background: var(--surface-hover);
+  color: var(--text);
+}
+.settings-content {
+  min-width: 0;
+  max-width: 58rem;
+}
+.settings-content h2 {
+  font-size: var(--text-xl);
+  margin: 0 0 var(--space-2);
+}
+.settings-content h3 {
+  margin: 0;
+}
+.settings-content p {
+  margin: 0;
+}
+.settings-content section,
+.settings-content [id] {
+  scroll-margin-top: var(--space-6);
+}
+.settings-check {
+  display: flex;
+  align-items: center;
+  gap: var(--space-3);
+  min-height: 44px;
+}
+.settings-check input {
+  width: 20px;
+  height: 20px;
+  accent-color: var(--accent);
+}
+.category-add {
+  display: grid;
+  grid-template-columns: minmax(0, 1fr) auto auto;
+  align-items: end;
+  gap: var(--space-3);
+}
+.category-row {
+  display: flex;
+  align-items: center;
+  gap: var(--space-2);
+  flex-wrap: wrap;
+}
+.category-row input:not([type="color"]) {
+  flex: 1;
+  min-width: 9rem;
+}
+.settings-content input[type="color"] {
+  width: 44px;
+  min-width: 44px;
+  height: 44px;
+  padding: var(--space-1);
+  cursor: pointer;
+}
+.settings-storage {
+  padding: var(--space-4);
+  border-radius: var(--radius);
+  background: var(--surface-soft);
+}
+.settings-storage p {
+  margin-top: var(--space-2);
+}
+.backup-counts {
+  display: grid;
+  grid-template-columns: repeat(3, minmax(0, 1fr));
+  gap: var(--space-4);
+  margin: 0;
+}
+.backup-counts dt {
+  color: var(--muted);
+  font-size: var(--text-sm);
+}
+.backup-counts dd {
+  margin: 0;
+  font-size: var(--text-xl);
+  font-weight: 650;
+}
+.backup-filename {
+  overflow-wrap: anywhere;
+}
+@media (max-width: 900px) {
+  .settings-layout {
+    grid-template-columns: minmax(0, 1fr);
+  }
+  .settings-nav {
+    position: static;
+    flex-direction: row;
+    flex-wrap: wrap;
+    gap: 0;
+  }
+  .settings-nav a {
+    padding: var(--space-2) var(--space-3);
+  }
+}
+@media (max-width: 480px) {
+  .category-add {
+    grid-template-columns: minmax(0, 1fr) auto;
+  }
+  .category-add > .button {
+    grid-column: 1 / -1;
+  }
+  .backup-counts {
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+  }
+}
