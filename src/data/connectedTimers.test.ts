@@ -138,3 +138,28 @@ it('allows adding planned review times to an unplanned source entry without dupl
   expect((await db.dailyEntries.get(entry.id))?.plannedStart).toBe(480);
   expect(await db.plans.count()).toBe(1);
 });
+it('reuses the same unplanned daily record when starting another session for its task', async () => {
+  vi.useFakeTimers({ toFake: ['Date'] });
+  vi.setSystemTime(new Date('2026-10-21T00:00:00Z'));
+  const first = await startTimer({ title: 'Repeated task session' });
+  vi.setSystemTime(new Date('2026-10-21T00:00:18Z'));
+  await saveTimerEntry(first.id, timerEntryDraft(await stopTimer(first.id)));
+  const existing = (await db.dailyEntries.toArray())[0];
+  expect(existing?.taskId).toBeTruthy();
+  vi.setSystemTime(new Date('2026-10-21T01:00:00Z'));
+  const next = await startTimer({ title: 'Repeated task session', taskId: existing?.taskId ?? null });
+  vi.setSystemTime(new Date('2026-10-21T01:10:00Z'));
+  await saveTimerEntry(next.id, timerEntryDraft(await stopTimer(next.id)));
+  expect(await db.dailyEntries.count()).toBe(1);
+  expect(await db.tasks.count()).toBe(1);
+  expect(await db.plans.count()).toBe(0);
+});
+it('keeps an explicit unassigned source unit when its linked task has a different unit', async () => {
+  vi.useFakeTimers({ toFake: ['Date'] });
+  vi.setSystemTime(new Date('2026-10-21T00:00:00Z'));
+  const entry = await actions.createDailyEntry({ ...entryInput, businessUnit: '' });
+  await db.tasks.update(entry.taskId ?? '', { businessUnit: 'Operations' });
+  const timer = await startTimer({ title: entry.title, sourceEntryId: entry.id });
+  expect(timer.businessUnit).toBe('');
+  expect(timerEntryDraft(timer).businessUnit).toBe('');
+});

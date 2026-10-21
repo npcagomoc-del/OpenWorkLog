@@ -1,12 +1,11 @@
 import { test, expect } from '@playwright/test';
 import { createTask, openBlankWorkspace } from './workspace';
 
-test('full day allocates a 32-minute activity across two slots and excludes lunch', async ({ page }) => {
+test('full day shows one spanning 32-minute activity and excludes lunch', async ({ page }) => {
   await openBlankWorkspace(page);
   await page.goto('/daily');
   await page.getByRole('button', { name: 'Full day · 24h', exact: true }).click();
   await expect(page.locator('[data-slot]')).toHaveCount(48);
-  await expect(page.locator('[data-slot="24"]')).toContainText('Lunch / break');
   await page.getByRole('button', { name: 'Add entry', exact: true }).click();
   const editor = page.getByRole('dialog', { name: 'Add daily entry' });
   await editor.getByLabel('Task / activity', { exact: true }).fill('Inspect camera feed');
@@ -15,8 +14,11 @@ test('full day allocates a 32-minute activity across two slots and excludes lunc
   await editor.getByLabel('Work done', { exact: true }).fill('Verified picture and recording.');
   await editor.getByRole('button', { name: 'Save entry', exact: true }).click();
   await expect(editor).toBeHidden();
-  await expect(page.locator('[data-slot="26"] .timeline-minutes')).toHaveText('20m');
-  await expect(page.locator('[data-slot="27"] .timeline-minutes')).toHaveText('12m');
+  const activity = page.locator('.daily-activity-block').filter({ hasText: 'Inspect camera feed' });
+  await expect(activity).toHaveCount(1);
+  await expect(activity).toContainText('13:10–13:42');
+  await expect(activity).toContainText('32m saved');
+  await expect(activity).toHaveCSS('grid-row', '27 / 29');
   await page.getByRole('button', { name: 'Add entry', exact: true }).click();
   await editor.getByLabel('Task / activity', { exact: true }).fill('Lunch');
   await editor.getByLabel('Actual from', { exact: true }).fill('12:00');
@@ -25,10 +27,11 @@ test('full day allocates a 32-minute activity across two slots and excludes lunc
   await editor.getByRole('button', { name: 'Save entry', exact: true }).click();
   await expect(editor).toBeHidden();
   await expect(page.locator('.daily-summary .card').filter({ hasText: 'Productive time' }).locator('strong')).toHaveText('32m');
-  await expect(page.locator('[data-slot="24"] .timeline-minutes')).toHaveText('Break');
+  await expect(page.locator('.daily-activity-block').filter({ hasText: 'Lunch' })).toContainText('Break');
   await page.reload();
   await page.getByRole('button', { name: 'Full day · 24h', exact: true }).click();
-  await expect(page.locator('[data-slot="26"] .timeline-minutes')).toHaveText('20m');
+  await expect(activity).toHaveCount(1);
+  await expect(activity).toContainText('32m saved');
 });
 
 test('timer pause survives reload and saving work leaves the linked task open', async ({ page }) => {

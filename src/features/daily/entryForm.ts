@@ -17,7 +17,7 @@ export function blankEntry(date: string, start: number | null = null): DailyEntr
 }
 export function linkedTaskEntry(entry: DailyEntryCreateInput, task: Task | undefined): DailyEntryCreateInput {
   if (!task) return { ...entry, taskId: null };
-  return { ...entry, taskId: task.id, title: task.title, projectId: task.projectId, categoryId: task.categoryId, ticket: task.ticket,
+  return { ...entry, taskId: task.id, businessUnit: task.businessUnit ?? '', title: task.title, projectId: task.projectId, categoryId: task.categoryId, ticket: task.ticket,
     subtasks: task.subtasks.map(item => `${item.done ? '[x]' : '[ ]'} ${item.title}`).join('\n'), status: task.status };
 }
 export function errorMessage(error: unknown): string {

@@ -12,6 +12,7 @@ import { timerSegmentsByDate } from '../domain/timerSegments';
 import { connectEntry } from './connectedWork';
 import { db } from './db';
 import { checkLinks } from './relations';
+import { inheritedBusinessUnit } from './workUnits';
 
 type StartInput = {
   readonly title: string;
@@ -25,7 +26,14 @@ export async function startTimer(input: StartInput): Promise<Timer> {
   return db.transaction('rw', db.tables, async () => {
     if (await db.timers.filter((t) => t.entryId === null).count())
       throw new WorkspaceError('timer', 'Review or discard the current timer first.');
-    const source = input.sourceEntryId ? await db.dailyEntries.get(input.sourceEntryId) : undefined;
+    const settings = (await db.settings.get('workspace')) ?? DEFAULT_SETTINGS;
+    const date = todayKey(new Date(), settings.timezone);
+    const candidates = !input.sourceEntryId && !input.planId && input.taskId
+      ? await db.dailyEntries.filter(entry => entry.taskId === input.taskId && entry.date === date && !entry.isLunch && !entry.planId).toArray()
+      : [];
+    const source = input.sourceEntryId
+      ? await db.dailyEntries.get(input.sourceEntryId)
+      : candidates.length === 1 ? candidates[0] : undefined;
     if (input.sourceEntryId && !source)
       throw new WorkspaceError('missing', 'This daily entry no longer exists.');
     if (source?.isLunch) throw new WorkspaceError('timer', 'Choose a work activity for the timer.');
@@ -41,12 +49,14 @@ export async function startTimer(input: StartInput): Promise<Timer> {
       taskDetached: entry?.taskDetached ?? plan?.taskDetached ?? false,
       projectId: entry?.projectId ?? input.projectId ?? plan?.projectId ?? null,
       categoryId: entry?.categoryId ?? input.categoryId ?? plan?.categoryId ?? null,
+      businessUnit: entry ? entry.businessUnit ?? '' : await inheritedBusinessUnit(input),
       planId,
       sourceEntryId: entry?.id ?? null,
       calendarDetached: entry?.calendarDetached ?? false,
       ...(entry
         ? {
             sourceDetails: {
+              businessUnit: entry.businessUnit ?? '',
               ticket: entry.ticket,
               projectName: entry.projectName,
               projectLink: entry.projectLink,
@@ -124,6 +134,7 @@ export function timerEntryDraft(
     taskDetached: timer.taskDetached ?? false,
     projectId: timer.projectId,
     categoryId: timer.categoryId,
+    businessUnit: timer.businessUnit ?? timer.sourceDetails?.businessUnit ?? '',
     title: timer.title,
     ticket: timer.sourceDetails?.ticket ?? '',
     projectName: timer.sourceDetails?.projectName ?? '',

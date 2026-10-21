@@ -12,6 +12,7 @@ export function minuteLabel(minute: number): string {
   return `${String(Math.floor(minute / 60)).padStart(2, '0')}:${String(minute % 60).padStart(2, '0')}`;
 }
 export function formatDuration(minutes: number): string {
+  if (minutes > 0 && minutes < 1) return minutes * 60 < 1 ? '<1s' : `${Math.floor(minutes * 60)}s`;
   const value = Math.round(minutes);
   return value < 60
     ? `${value}m`

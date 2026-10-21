@@ -3,7 +3,7 @@ import { Pause, Play, Square, TimerReset } from 'lucide-react';
 import { Button, Card, ConfirmDialog, Notice, useToast } from '../../components/ui';
 import { discardTimer, pauseTimer, resumeTimer, stopTimer } from '../../data/timers';
 import type { Timer, Workspace } from '../../domain/models';
-import { timerElapsedSeconds } from '../../domain/time';
+import { entryMinutes, formatDuration, timerElapsedSeconds } from '../../domain/time';
 import { errorMessage } from './entryForm';
 import { TimerStartForm } from './TimerStartForm';
 import { TimerPlanContext } from './TimerPlanContext';
@@ -31,6 +31,7 @@ export function TimerCard({ workspace, timer, date, onReview }: Props) {
     catch (caught) { setError(errorMessage(caught)); }
     finally { setBusy(false); }
   }
+  const savedMinutes = timer ? workspace.dailyEntries.filter(entry => entry.id === timer.sourceEntryId || Boolean(timer.planId && entry.planId === timer.planId)).reduce((total, entry) => total + entryMinutes(entry), 0) : 0;
   const elapsed = timer ? Math.floor(timerElapsedSeconds(timer, now)) : 0;
   const clock = [Math.floor(elapsed / 3600), Math.floor(elapsed / 60) % 60, elapsed % 60]
     .map(value => String(value).padStart(2, '0')).join(':');
@@ -48,6 +49,7 @@ export function TimerCard({ workspace, timer, date, onReview }: Props) {
       </output>}
     </div>
     {error && <Notice tone="error">{error}</Notice>}
+    {timer && <p className="small muted">Current session elapsed · {formatDuration(elapsed / 60)}. Previously saved for this activity · {formatDuration(savedMinutes)}. Pauses are excluded.</p>}
     {timer && <TimerPlanContext timer={timer} workspace={workspace} />}
     {timer ? <div className="cluster">
       {timer.state === 'running' && <Button busy={busy} onClick={() => void run(() => pauseTimer(timer.id))}><Pause size={16} />Pause</Button>}

@@ -22,7 +22,7 @@ test('a plan timer updates its existing daily entry without losing planned times
   await entry.getByRole('button', { name: 'Cancel', exact: true }).click();
   await page.goto('/calendar');
   await page.locator('.calendar-agenda-item').filter({ hasText: 'Planned camera review' }).click();
-  await detail.getByRole('button', { name: 'Start timer now', exact: true }).click();
+  await detail.getByRole('button', { name: 'Start timer', exact: true }).click();
   await expect(page.getByRole('button', { name: 'Pause', exact: true })).toBeVisible();
   await page.clock.setFixedTime(new Date('2026-10-21T05:42:00Z'));
   await page.getByRole('button', { name: 'Stop and review', exact: true }).click();
@@ -49,7 +49,7 @@ test('a plan timer updates its existing daily entry without losing planned times
   await page.clock.setFixedTime(new Date('2026-10-21T05:50:00Z'));
   await page.goto('/calendar');
   await page.locator('.calendar-agenda-item').filter({ hasText: 'Planned camera review' }).click();
-  await detail.getByRole('button', { name: 'Start timer now', exact: true }).click();
+  await detail.getByRole('button', { name: 'Start timer', exact: true }).click();
   await expect(page.getByRole('button', { name: 'Pause', exact: true })).toBeVisible();
   await page.clock.setFixedTime(new Date('2026-10-21T06:00:00Z'));
   await page.getByRole('button', { name: 'Stop and review', exact: true }).click();
