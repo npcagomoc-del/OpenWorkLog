@@ -1,6 +1,7 @@
 import type { Plan, Settings } from '../../domain/models';
 import { todayKey } from '../../domain/time';
-import { parseDate, planLanes, plansForDate, timeInput } from './calendarLogic';
+import { CalendarTimeGrid } from './CalendarTimeGrid';
+import { parseDate, plansForDate, timeInput } from './calendarLogic';
 
 type GridProps = {
   readonly dates: readonly string[];
@@ -66,83 +67,15 @@ export function CalendarGrid(props: GridProps) {
         })}
       </section>
     );
-  const start = workHours ? Math.floor(settings.workStart / 30) * 30 : 0;
-  const end = workHours ? Math.ceil(settings.workEnd / 30) * 30 : 1440;
-  const slots = Array.from({ length: (end - start) / 30 }, (_, index) => start + index * 30);
   return (
-    <section className="calendar-time-scroll" aria-label="Calendar time grid">
-      <div
-        className={`calendar-time-grid ${dates.length > 1 ? 'calendar-time-grid--week' : ''}`}
-        style={{ gridTemplateColumns: `4rem repeat(${dates.length}, minmax(0, 1fr))` }}
-      >
-        <div className="calendar-time-corner">24h</div>
-        {dates.map((date) => (
-          <button
-            type="button"
-            className={`calendar-date-header ${date === today ? 'calendar-date-header--today' : ''}`}
-            key={date}
-            onClick={() => onSelect(date)}
-          >
-            <span>{parseDate(date).toLocaleDateString(undefined, { weekday: 'short' })}</span>
-            <strong>{parseDate(date).getDate()}</strong>
-          </button>
-        ))}
-        <div className="calendar-times">
-          {slots.map((minute) => (
-            <div key={minute}>{timeInput(minute)}</div>
-          ))}
-        </div>
-        {dates.map((date) => {
-          const positioned = planLanes(
-            plansForDate(plans, date).filter(
-              (plan) => plan.endMinute > start && plan.startMinute < end,
-            ),
-          );
-          const laneCount = Math.max(1, ...positioned.map((item) => item.lane + 1));
-          return (
-            <div
-              className="calendar-day-track"
-              key={date}
-              style={{ height: `${slots.length * 3.5}rem` }}
-            >
-              {slots.map((minute) => {
-                const lunch = minute < settings.lunchEnd && minute + 30 > settings.lunchStart;
-                return (
-                  <button
-                    type="button"
-                    key={minute}
-                    className={`calendar-slot ${lunch ? 'calendar-slot--lunch' : ''}`}
-                    onClick={() => onCreate(date, minute)}
-                    aria-label={`Plan ${date} at ${timeInput(minute)}${lunch ? ', lunch break' : ''}`}
-                  >
-                    {lunch && <span>Lunch</span>}
-                  </button>
-                );
-              })}
-              {positioned.map(({ plan, lane }) => (
-                <button
-                  type="button"
-                  key={plan.id}
-                  className="calendar-block"
-                  title={`${plan.title} · ${timeInput(plan.startMinute)}–${timeInput(plan.endMinute)}`}
-                  onClick={() => onPlan(plan)}
-                  style={{
-                    top: `${((Math.max(plan.startMinute, start) - start) / 30) * 3.5}rem`,
-                    height: `${((Math.min(plan.endMinute, end) - Math.max(plan.startMinute, start)) / 30) * 3.5}rem`,
-                    left: `calc(${(lane / laneCount) * 100}% + 3px)`,
-                    width: `calc(${100 / laneCount}% - 6px)`,
-                  }}
-                >
-                  <strong>{plan.title}</strong>
-                  <span>
-                    {timeInput(plan.startMinute)}–{timeInput(plan.endMinute)}
-                  </span>
-                </button>
-              ))}
-            </div>
-          );
-        })}
-      </div>
-    </section>
+    <CalendarTimeGrid
+      dates={dates}
+      plans={plans}
+      settings={settings}
+      workHours={workHours}
+      onSelect={onSelect}
+      onPlan={onPlan}
+      onCreate={onCreate}
+    />
   );
 }

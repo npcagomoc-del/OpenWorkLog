@@ -1,109 +1,9 @@
-import { CalendarDays, Pencil, Trash2 } from 'lucide-react';
-import { useEffect, useRef, useState } from 'react';
-import { Badge, Button, Card, IconButton, StatusBadge } from '../../components/ui';
-import type { Category, Project, Settings, Status, Task } from '../../domain/models';
-import { statuses } from './taskLogic';
-
-type TaskViewProps = {
-  readonly tasks: readonly Task[];
-  readonly categories: readonly Category[];
-  readonly projects: readonly Project[];
-  readonly settings: Settings;
-  readonly view: 'list' | 'table' | 'board';
-  readonly onEdit: (task: Task) => void;
-  readonly onDelete: (task: Task) => void;
-  readonly onRename: (task: Task, title: string) => Promise<boolean>;
-  readonly onStatus: (task: Task, status: Status) => void;
-};
-
-function TaskName({
-  task,
-  onRename,
-  onEdit,
-}: Pick<TaskViewProps, 'onRename' | 'onEdit'> & { readonly task: Task }) {
-  const [editing, setEditing] = useState(false);
-  const [title, setTitle] = useState(task.title);
-  const [busy, setBusy] = useState(false);
-  const renameInput = useRef<HTMLInputElement>(null);
-  useEffect(() => {
-    if (editing) renameInput.current?.focus();
-  }, [editing]);
-  async function save() {
-    if (!title.trim()) return;
-    setBusy(true);
-    try {
-      if (await onRename(task, title.trim())) setEditing(false);
-    } finally {
-      setBusy(false);
-    }
-  }
-  return (
-    <div className="task-name">
-      {editing ? (
-        <form
-          className="cluster"
-          onSubmit={(event) => {
-            event.preventDefault();
-            void save();
-          }}
-        >
-          <input
-            aria-label="Rename task"
-            ref={renameInput}
-            required
-            value={title}
-            onChange={(event) => setTitle(event.target.value)}
-            onKeyDown={(event) => {
-              if (event.key === 'Escape') setEditing(false);
-            }}
-          />
-          <Button size="sm" busy={busy} type="submit">
-            Save
-          </Button>
-          <Button size="sm" variant="ghost" onClick={() => setEditing(false)}>
-            Cancel
-          </Button>
-        </form>
-      ) : (
-        <>
-          <button type="button" className="task-title" onClick={() => onEdit(task)}>
-            {task.title}
-          </button>
-          <IconButton
-            label={`Rename ${task.title}`}
-            onClick={() => {
-              setTitle(task.title);
-              setEditing(true);
-            }}
-          >
-            <Pencil size={14} />
-          </IconButton>
-        </>
-      )}
-      {task.demo && <Badge>Demo</Badge>}
-    </div>
-  );
-}
-
-function TaskStatus({ task, onStatus }: Pick<TaskViewProps, 'onStatus'> & { readonly task: Task }) {
-  const tones = { Open: 'open', 'In Progress': 'progress', Closed: 'closed' } as const;
-  return (
-    <select
-      id={`task-status-${task.id}`}
-      className={`task-status-select task-status-select--${tones[task.status]}`}
-      aria-label={`Move ${task.title} to status`}
-      value={task.status}
-      onChange={(event) => {
-        const status = statuses.find((value) => value === event.target.value);
-        if (status) onStatus(task, status);
-      }}
-    >
-      {statuses.map((status) => (
-        <option key={status}>{status}</option>
-      ))}
-    </select>
-  );
-}
+import { CalendarDays, Trash2 } from 'lucide-react';
+import { Badge, Card, IconButton, StatusBadge } from '../../components/ui';
+import type { Task } from '../../domain/models';
+import { TaskBoard } from './TaskBoard';
+import { TaskName, TaskStatus } from './TaskControls';
+import type { TaskViewProps } from './taskViewTypes';
 
 export function TaskViews(props: TaskViewProps) {
   const { tasks, view, categories, projects, settings, onEdit, onDelete, onRename, onStatus } =
@@ -166,46 +66,7 @@ export function TaskViews(props: TaskViewProps) {
         </table>
       </Card>
     );
-  if (view === 'board')
-    return (
-      <div className="task-board">
-        {statuses.map((status) => (
-          <section className="task-board-column" key={status} aria-label={`${status} tasks`}>
-            <div className="split">
-              <StatusBadge status={status} />
-              <span className="muted small">
-                {tasks.filter((task) => task.status === status).length}
-              </span>
-            </div>
-            <div className="stack">
-              {tasks
-                .filter((task) => task.status === status)
-                .map((task) => (
-                  <Card className="task-board-card" key={task.id}>
-                    <span className="small muted">{categoryName(task)}</span>
-                    <TaskName task={task} onRename={onRename} onEdit={onEdit} />
-                    {projectName(task) && <span className="small muted">{projectName(task)}</span>}
-                    {task.latestUpdate && <p className="small task-update">{task.latestUpdate}</p>}
-                    <div className="split">
-                      <span className="small muted">{task.dueDate || 'No due date'}</span>
-                      <IconButton label={`Delete ${task.title}`} onClick={() => onDelete(task)}>
-                        <Trash2 size={16} />
-                      </IconButton>
-                    </div>
-                    <label className="small muted" htmlFor={`task-status-${task.id}`}>
-                      Move to
-                      <TaskStatus task={task} onStatus={onStatus} />
-                    </label>
-                  </Card>
-                ))}
-              {!tasks.some((task) => task.status === status) && (
-                <p className="small muted task-board-empty">No tasks here</p>
-              )}
-            </div>
-          </section>
-        ))}
-      </div>
-    );
+  if (view === 'board') return <TaskBoard {...props} />;
   return (
     <Card className="task-list">
       {tasks.map((task) => (

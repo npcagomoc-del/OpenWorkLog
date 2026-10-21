@@ -61,8 +61,10 @@ export default function TasksPage() {
     try {
       await actions.updateTask(task.id, { status: next });
       toast(`Moved to ${next}`);
+      return true;
     } catch (cause) {
       toast(cause instanceof Error ? cause.message : 'Unable to move task', 'error');
+      return false;
     }
   }
   async function remove() {
@@ -162,9 +164,7 @@ export default function TasksPage() {
           onEdit={(task) => setEditor({ task })}
           onDelete={setDeleting}
           onRename={rename}
-          onStatus={(task, next) => {
-            void move(task, next);
-          }}
+          onStatus={move}
         />
       ) : (
         <Card>
