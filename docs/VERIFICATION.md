@@ -14,8 +14,8 @@ Verified locally on 2026-10-21 (Asia/Manila), using the production build and Chr
 | Browser acceptance (`npm run test:e2e`) | 19 passed, zero failed/skipped/flaky results, 1.3 minutes |
 | Responsive and state captures | 132 valid PNGs, covering five viewport sizes and the states below |
 | Accessibility | 18 axe checks, zero violations; Lighthouse Accessibility 100 on six page/device audits |
-| Independent visual review | Final fresh capture set delivered for final release review; approval recorded separately |
-| GitHub source upload | Private repository created; upload status recorded at release handoff |
+| Independent visual review | Pass A and Pass B both PASS, no blockers; each inspected all 132 final captures and five supplemental Large-table captures |
+| GitHub source upload | Source uploaded to private npcagomoc-del/OpenWorkLog on main; initial source commit 4e66d6c, local and remote SHA verified |
 
 The final production HTML fingerprint is `7dc953c4e0c6585360c508e894a9e3c69312c3d0a8be3ba96425d50b2e080cfe` (SHA-256). Its main bundle is `index-B4yz85nS.js` and shared stylesheet is `index-DxhdqkLE.css`.
 
@@ -45,6 +45,8 @@ Each state asserts no document-width overflow. Computed checks confirm that the 
 First-round visual review found three real issues: a mobile keyboard hint over the search icon, the notes magnifier overlapping its placeholder, and task-table short fields wrapping awkwardly. These were repaired and the complete fresh 132-image set was captured for independent round 2 review. Round 2 found that the task-table status selector clipped In Progress. A scoped table-only minimum width repaired it. A failing-first browser check measured 98.61 pixels available against 116.71 pixels required for the actual label, padding and native arrow. The same label-fit check now passes at all five viewport sizes; it does not pin a CSS width constant. The final release reviewers received a newly captured complete 132-image set after that repair. Previous review reports are preserved as history rather than treated as approval.
 
 Stable evidence is in the sibling `OpenWorkLog-QA` deliverable: `acceptance-results-final.json`, `capture-manifest-final.json`, `responsive-final/`, `data-integrity-final.md`, `performance-final.md`, and visual review reports. Playwright's working `test-results/` directory is replaced on each run. Test records and downloaded backups are excluded from Git.
+
+Final independent approvals: visual-system-release.md (Pass A) and visual-pixels-release.md (Pass B), both PASS without blocking findings. Both recomputed source aggregate SHA-256 33ff0adfedd91b17e84ec421e0e50cf713331695df428ce046443a987433e00f and the final production HTML fingerprint above. The reviewed final capture-manifest SHA-256 is 8885b4fe1004220a8bc7c5ff352c582265169e00150ec1efee6a7ba6b633c327. Five additional actual Settings Large task-table captures and ten 16/18-pixel root-size label-fit checks are indexed separately in OpenWorkLog-QA/performance/table-large-manifest.json and table-label-fit.json. Controls measured 160/180 px against 116.71/128.30 px required; all five viewport sizes passed with no document overflow.
 
 ## Performance and limits
 
