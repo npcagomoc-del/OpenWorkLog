@@ -5,6 +5,7 @@ import { Badge, Button, Card, PageHeader, useToast } from '../../components/ui';
 import { useWorkspace } from '../../data/useWorkspace';
 import { formatDuration, todayKey } from '../../domain/time';
 import { downloadText } from '../../lib/download';
+import { businessUnitOptions } from '../reports/reportUnits';
 import { ActivityChart, StatusRing } from './ExecutiveCharts';
 import { ExecutiveFilters, daysBefore } from './ExecutiveFilters';
 import { ExecutiveKpis } from './ExecutiveKpis';
@@ -21,6 +22,7 @@ export default function ExecutivePage() {
     to: today,
     categoryId: '',
     owner: '',
+    businessUnit: '',
   }));
   const { toast } = useToast();
   const invalidRange = !scope.from || !scope.to || scope.from > scope.to;
@@ -62,6 +64,7 @@ export default function ExecutivePage() {
         invalidRange={invalidRange}
         categories={workspace.categories}
         owners={owners}
+        businessUnits={businessUnitOptions(workspace)}
       />
       {metrics.demo && (
         <div className="cluster executive-demo">

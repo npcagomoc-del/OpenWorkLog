@@ -16,7 +16,7 @@ export function ExecutiveKpis({ metrics, today, invalidRange }: Props) {
           <CheckSquare2 size={22} aria-hidden="true" />
         </div>
         <strong>{metrics.openTasks}</strong>
-        <span className="small muted">Open and In Progress · current</span>
+        <span className="small muted">Open, In Progress and On Hold · current</span>
       </Card>
       <Card className="executive-kpi" role="group" aria-label="Active projects">
         <div className="split">

@@ -1,12 +1,13 @@
 import './executiveCharts.css';
 import { ScrollablePreview } from '../reports/ScrollablePreview';
 import { Card, StatusBadge } from '../../components/ui';
+import { statusColor } from '../../components/statusPalette';
 import { formatDuration } from '../../domain/time';
 import type { ActivityBucket } from './executiveActivity';
 import type { StatusCount } from './executiveMetrics';
 
 const ringLength = 2 * Math.PI * 46;
-const statusTone = { Open: 'open', 'In Progress': 'progress', Closed: 'closed' } as const;
+
 export function StatusRing({ counts }: { readonly counts: readonly StatusCount[] }) {
   const total = counts.reduce((sum, item) => sum + item.count, 0);
   const closed = counts.find((item) => item.status === 'Closed')?.count ?? 0;
@@ -28,7 +29,8 @@ export function StatusRing({ counts }: { readonly counts: readonly StatusCount[]
               return (
                 <circle
                   key={item.status}
-                  className={`executive-ring-segment executive-tone-${statusTone[item.status]}`}
+                  className="executive-ring-segment"
+                  style={{ stroke: statusColor(item.status) }}
                   cx="60"
                   cy="60"
                   r="46"
@@ -52,8 +54,36 @@ export function StatusRing({ counts }: { readonly counts: readonly StatusCount[]
           ))}
         </ul>
       </div>
+      <details className="executive-chart-data">
+        <summary>View status figures</summary>
+        <ScrollablePreview label="Current task status figures">
+          <table className="data-table">
+            <caption className="visually-hidden">Current task statuses with exact counts</caption>
+            <thead>
+              <tr>
+                <th>Status</th>
+                <th>Tasks</th>
+              </tr>
+            </thead>
+            <tbody>
+              {counts.map((item) => (
+                <tr key={item.status}>
+                  <th scope="row">{item.status}</th>
+                  <td>{item.count}</td>
+                </tr>
+              ))}
+            </tbody>
+            <tfoot>
+              <tr>
+                <th scope="row">Total</th>
+                <td>{total}</td>
+              </tr>
+            </tfoot>
+          </table>
+        </ScrollablePreview>
+      </details>{' '}
       <p className="small muted">
-        Current saved task statuses, including tasks created from Calendar and Daily log.
+        Current saved task statuses. Closed records completed work; Cancelled records stopped work.
       </p>
     </Card>
   );

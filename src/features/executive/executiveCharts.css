@@ -27,15 +27,6 @@
 .executive-ring-segment {
   stroke-linecap: butt;
 }
-.executive-tone-open {
-  stroke: var(--open);
-}
-.executive-tone-progress {
-  stroke: var(--progress-bg);
-}
-.executive-tone-closed {
-  stroke: var(--closed);
-}
 .executive-ring-label {
   position: absolute;
   inset: 0;

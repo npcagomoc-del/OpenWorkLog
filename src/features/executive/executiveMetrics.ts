@@ -1,11 +1,13 @@
 import {
-  STATUSES,
+  STATUS_VALUES,
+  isTerminalStatus,
   type DailyEntry,
   type Plan,
   type Status,
   type Workspace,
 } from '../../domain/models';
 import { entryMinutes } from '../../domain/time';
+import { matchesBusinessUnit } from '../reports/reportUnits';
 import { activityBuckets } from './executiveActivity';
 
 export type ExecutiveScope = {
@@ -13,6 +15,7 @@ export type ExecutiveScope = {
   readonly to: string;
   readonly categoryId: string;
   readonly owner: string;
+  readonly businessUnit?: string;
 };
 export type StatusCount = { readonly status: Status; readonly count: number };
 export type PortfolioRow = {
@@ -29,7 +32,7 @@ export type OwnerWork = {
   readonly counts: readonly StatusCount[];
 };
 function counts(records: readonly { readonly status: Status }[]): StatusCount[] {
-  return STATUSES.map((status) => ({
+  return STATUS_VALUES.map((status) => ({
     status,
     count: records.filter((record) => record.status === status).length,
   }));
@@ -53,8 +56,20 @@ export function executiveMetrics(workspace: Workspace, scope: ExecutiveScope, to
       null
     );
   };
-  const matches = (category: string | null, owner: string) =>
-    (!scope.categoryId || category === scope.categoryId) && (!scope.owner || owner === scope.owner);
+  const activityUnit = (record: DailyEntry | Plan) => {
+    const task = record.taskId ? taskMap.get(record.taskId) : undefined;
+    const projectId = record.projectId ?? task?.projectId;
+    return (
+      record.businessUnit?.trim() ??
+      task?.businessUnit?.trim() ??
+      (projectId ? projectMap.get(projectId)?.businessUnit?.trim() : '') ??
+      ''
+    );
+  };
+  const matches = (category: string | null, owner: string, businessUnit: string | undefined) =>
+    (!scope.categoryId || category === scope.categoryId) &&
+    (!scope.owner || owner === scope.owner) &&
+    matchesBusinessUnit(businessUnit, scope.businessUnit);
   const tasks = workspace.tasks.filter(
     (task) =>
       !task.archived &&
@@ -63,19 +78,26 @@ export function executiveMetrics(workspace: Workspace, scope: ExecutiveScope, to
           (task.projectId ? projectMap.get(task.projectId)?.categoryId : null) ??
           null,
         ownerName(task.assignee),
+        task.businessUnit,
       ),
   );
   const projects = workspace.projects.filter(
-    (project) => !project.archived && matches(project.categoryId, ownerName(project.owner)),
+    (project) =>
+      !project.archived &&
+      matches(project.categoryId, ownerName(project.owner), project.businessUnit),
   );
   const inRange = (date: string) =>
     scope.from <= scope.to && date >= scope.from && date <= scope.to;
   const allEntries = workspace.dailyEntries.filter(
-    (entry) => inRange(entry.date) && matches(activityCategory(entry), activityOwner(entry)),
+    (entry) =>
+      inRange(entry.date) &&
+      matches(activityCategory(entry), activityOwner(entry), activityUnit(entry)),
   );
   const entries = allEntries.filter((entry) => !entry.isLunch);
   const plans = workspace.plans.filter(
-    (plan) => inRange(plan.date) && matches(activityCategory(plan), activityOwner(plan)),
+    (plan) =>
+      inRange(plan.date) &&
+      matches(activityCategory(plan), activityOwner(plan), activityUnit(plan)),
   );
   const knownPlanIds = new Set(workspace.plans.map((plan) => plan.id));
   const plannedEntries = entries.map((entry) =>
@@ -99,9 +121,11 @@ export function executiveMetrics(workspace: Workspace, scope: ExecutiveScope, to
       0,
     );
   const overdue = tasks
-    .filter((task) => task.status !== 'Closed' && task.dueDate !== null && task.dueDate < today)
+    .filter(
+      (task) => !isTerminalStatus(task.status) && task.dueDate !== null && task.dueDate < today,
+    )
     .sort((a, b) => (a.dueDate ?? '').localeCompare(b.dueDate ?? ''));
-  const dueToday = tasks.filter((task) => task.status !== 'Closed' && task.dueDate === today);
+  const dueToday = tasks.filter((task) => !isTerminalStatus(task.status) && task.dueDate === today);
   const categoryMap = new Map<string | null, number>();
   for (const entry of entries)
     categoryMap.set(
@@ -125,7 +149,7 @@ export function executiveMetrics(workspace: Workspace, scope: ExecutiveScope, to
       const assigned = tasks.filter((task) => ownerName(task.assignee) === name);
       return {
         name,
-        open: assigned.filter((task) => task.status !== 'Closed').length,
+        open: assigned.filter((task) => !isTerminalStatus(task.status)).length,
         closed: assigned.filter((task) => task.status === 'Closed').length,
         total: assigned.length,
         counts: counts(assigned),
@@ -141,7 +165,7 @@ export function executiveMetrics(workspace: Workspace, scope: ExecutiveScope, to
     { label: 'Projects', records: projects },
   ].map((row) => ({ label: row.label, total: row.records.length, counts: counts(row.records) }));
   const projectDates = projects
-    .filter((project) => project.status !== 'Closed' && project.dueDate)
+    .filter((project) => !isTerminalStatus(project.status) && project.dueDate)
     .sort((a, b) => (a.dueDate ?? '').localeCompare(b.dueDate ?? ''))
     .slice(0, 5);
   return {
@@ -164,8 +188,8 @@ export function executiveMetrics(workspace: Workspace, scope: ExecutiveScope, to
     taskCounts: counts(tasks),
     projectCounts: counts(projects),
     projectDates,
-    activeProjects: projects.filter((project) => project.status !== 'Closed').length,
-    openTasks: tasks.filter((task) => task.status !== 'Closed').length,
+    activeProjects: projects.filter((project) => !isTerminalStatus(project.status)).length,
+    openTasks: tasks.filter((task) => !isTerminalStatus(task.status)).length,
     demo: [...tasks, ...projects, ...allEntries, ...plans].some((record) => record.demo),
   };
 }

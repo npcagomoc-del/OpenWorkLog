@@ -108,7 +108,7 @@ export function ExecutiveAttention({ metrics }: { readonly metrics: ExecutiveMet
           <FolderKanban size={22} aria-hidden="true" />
         </div>
         <p className="small muted">
-          Nearest saved due dates for projects that are still open or in progress.
+          Nearest saved due dates for unfinished projects, including On Hold.
         </p>
         {metrics.projectDates.length ? (
           <ul className="executive-record-list">

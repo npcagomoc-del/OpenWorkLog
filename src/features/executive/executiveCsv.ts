@@ -1,3 +1,5 @@
+import { businessUnitFilterLabel } from '../reports/reportUnits';
+import { STATUS_VALUES } from '../../domain/models';
 import type { ExecutiveMetrics, ExecutiveScope } from './executiveMetrics';
 function cell(value: string | number): string {
   const text = String(value);
@@ -11,27 +13,29 @@ export function executiveCsv(metrics: ExecutiveMetrics, scope: ExecutiveScope): 
       'Item',
       'Value',
       'Unit',
-      'Open',
-      'In Progress',
-      'Closed',
+      ...STATUS_VALUES,
       'Productive Minutes',
       'Planned Minutes',
       'From',
       'To',
       'Category Filter',
       'Owner Filter',
+      'Business Unit Filter',
     ],
   ];
   const round = (value: number) => Number(value.toFixed(2));
-  const filters = [metrics.categoryLabel, scope.owner || 'All owners'];
+  const filters = [
+    metrics.categoryLabel,
+    scope.owner || 'All owners',
+    businessUnitFilterLabel(scope.businessUnit),
+  ];
+  const emptyStatuses = STATUS_VALUES.map(() => '');
   const period = (item: string, value: number, unit: string) => [
     'Selected period',
     item,
     round(value),
     unit,
-    '',
-    '',
-    '',
+    ...emptyStatuses,
     '',
     '',
     scope.from,
@@ -55,21 +59,19 @@ export function executiveCsv(metrics: ExecutiveMetrics, scope: ExecutiveScope): 
     period('Productive time', metrics.loggedMinutes, 'minutes'),
     period('Planned time', metrics.plannedMinutes, 'minutes'),
     period('Break time', metrics.breakMinutes, 'minutes'),
+    [
+      'Current portfolio',
+      'Overdue tasks',
+      metrics.overdue.length,
+      'tasks',
+      ...emptyStatuses,
+      '',
+      '',
+      '',
+      '',
+      ...filters,
+    ],
   );
-  rows.push([
-    'Current portfolio',
-    'Overdue tasks',
-    metrics.overdue.length,
-    'tasks',
-    '',
-    '',
-    '',
-    '',
-    '',
-    '',
-    '',
-    ...filters,
-  ]);
   for (const category of metrics.categoryTime)
     rows.push(period(category.name, category.minutes, 'productive minutes'));
   for (const owner of metrics.ownerWork)
@@ -91,9 +93,7 @@ export function executiveCsv(metrics: ExecutiveMetrics, scope: ExecutiveScope): 
       `${bucket.from} to ${bucket.to}`,
       '',
       '',
-      '',
-      '',
-      '',
+      ...emptyStatuses,
       round(bucket.actual),
       round(bucket.planned),
       bucket.from,

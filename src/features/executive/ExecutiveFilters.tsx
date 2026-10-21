@@ -11,6 +11,7 @@ type Props = {
   readonly onChange: (value: Partial<ExecutiveScope>) => void;
   readonly categories: readonly Category[];
   readonly owners: readonly string[];
+  readonly businessUnits: readonly string[];
   readonly today: string;
   readonly invalidRange: boolean;
 };
@@ -19,6 +20,7 @@ export function ExecutiveFilters({
   onChange,
   categories,
   owners,
+  businessUnits,
   today,
   invalidRange,
 }: Props) {
@@ -84,10 +86,26 @@ export function ExecutiveFilters({
             ))}
           </select>
         </Field>
+        <Field label="Business Unit" htmlFor="executive-business-unit">
+          <select
+            id="executive-business-unit"
+            value={scope.businessUnit || ''}
+            onChange={(event) => onChange({ businessUnit: event.target.value })}
+          >
+            <option value="">All business units</option>
+            <option value="__unassigned__">Unassigned</option>
+            {businessUnits.map((unit) => (
+              <option key={unit} value={unit}>
+                {unit}
+              </option>
+            ))}
+          </select>
+        </Field>
       </div>
       <p className="small muted">
         Dates filter logged and planned time. Portfolio counts show current unarchived records;
-        category and owner apply to both.
+        category, owner and Business Unit apply to both. Activity uses its saved unit, including
+        Unassigned. Records without a unit field use the linked task/project.
       </p>
       {invalidRange && (
         <Notice tone="error">

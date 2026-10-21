@@ -4,20 +4,22 @@ Route: `/executive`. The page reads the same local workspace as My Tasks, Projec
 
 ## Metric definitions
 
-- **Current portfolio:** unarchived task and project records, filtered by category and owner. Activity dates do not reconstruct historical task statuses.
+- **Current portfolio:** unarchived task and project records, filtered by category, owner and Business Unit. Activity dates do not reconstruct historical task statuses.
 - **Operational tasks:** task records whose type is operational. **Other tasks:** remaining task records, including project-type tasks. **Projects:** project entities, counted once; their linked tasks remain task records. No combined task/project total is presented.
-- **Unfinished tasks / active projects:** current Open plus In Progress records. **Overdue:** unfinished tasks due before today in the configured workspace time zone. Due-today is separate.
-- **Productive time:** selected-period Daily log actual segments or actual interval. Pauses are excluded by the stored segments; lunch/break entries contribute zero productive minutes. Historical time remains available after its linked task is archived.
+- **Unfinished tasks / active projects:** current Open, In Progress and On Hold records. Closed and Cancelled are terminal; only Closed represents completed work. **Overdue:** unfinished tasks due before today in the configured workspace time zone. Due-today is separate.
+- **Productive time:** selected-period Daily log actual segments or actual interval. Pauses are excluded by the stored segments; lunch/break entries contribute zero productive minutes. Historical time remains available after its linked task is archived or cancelled.
 - **Planned time:** selected-period Calendar plans, plus planned intervals on daily entries that have no surviving linked plan. A plan and its daily log are not counted twice. Planned time never contributes to productive time.
 - **Owners:** the linked task's saved assignee, otherwise the linked project's owner; empty assignments are Unassigned. A project owner is not assumed to be the assignee of its linked task. Owner bars show current unfinished task counts, with selected-period logged time stated separately.
 - **Categories:** an activity's category, then its task's category, then its linked project's category. Missing categories are Uncategorized. The same fallbacks apply to portfolio category filters where appropriate.
 - **Activity chart:** at most fourteen contiguous date buckets spanning the selected inclusive date range. Longer periods use larger buckets. The expandable figure table provides the same values as the visual bars.
 
-There are no invented capacity, health, forecast or utilization figures. Status colors use the shared Open/In Progress/Closed tokens; all themes use shared surfaces and text tokens.
+There are no invented capacity, health, forecast or utilization figures. Status colors use all five shared resolved palette colors; all themes use shared surfaces and text tokens.
+
+Business Unit uses the activity's saved value, including explicit Unassigned. An absent optional unit field falls back to its task, then project. Portfolio units reflect current task/project values. Reports applies the same attribution to its preview and export.
 
 ## CSV
 
-Export summary CSV contains thirteen quoted UTF-8/BOM columns. Current portfolio rows and selected-period time rows are explicitly labelled. Category/owner filters and date bounds are included. Quotes, commas and newlines are preserved, and formula-leading text is prefixed for spreadsheet safety.
+Export summary CSV contains sixteen quoted UTF-8/BOM columns. Current portfolio rows and selected-period time rows are explicitly labelled. Category/owner/Business Unit filters and date bounds are included. Quotes, commas and newlines are preserved, and formula-leading text is prefixed for spreadsheet safety.
 
 ## Verification
 

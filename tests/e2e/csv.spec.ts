@@ -10,10 +10,12 @@ test('downloaded tracker CSV preserves punctuation and neutralizes formulas', as
   await page.getByRole('button', { name: '=SUM(1,2)', exact: true }).click();
   const editor = page.getByRole('dialog', { name: 'Edit task' });
   await editor.getByLabel('Latest update', { exact: true }).fill('Checked "Port", then Starboard\nRecording verified.');
+  await editor.getByLabel('Business Unit', { exact: true }).fill('Marine operations');
+  await editor.getByLabel('Status', { exact: true }).selectOption('On Hold');
   await editor.getByRole('button', { name: 'Save task', exact: true }).click();
   await expect(editor).toBeHidden();
   const downloadReady = page.waitForEvent('download');
-  await page.getByRole('button', { name: 'Export CSV', exact: true }).click();
+  await page.getByRole('button', { name: 'Export tasks CSV', exact: true }).click();
   const download = await downloadReady;
   const filePath = testInfo.outputPath('task-tracker.csv');
   await download.saveAs(filePath);
@@ -22,10 +24,12 @@ test('downloaded tracker CSV preserves punctuation and neutralizes formulas', as
   expect(rows).toHaveLength(1);
   expect(rows[0]?.['Task']).toBe("'=SUM(1,2)");
   expect(rows[0]?.['Latest Update']).toBe('Checked "Port", then Starboard\nRecording verified.');
-  expect(rows[0]?.['Status']).toBe('Open');
+  expect(rows[0]?.['Status']).toBe('On Hold');
+  expect(rows[0]?.['Business Unit']).toBe('Marine operations');
+  await page.screenshot({ path: testInfo.outputPath('quoted-task-csv-export.png'), fullPage: true });
 });
 
-test('CSV import requires a valid preview and rejects unsupported statuses', async ({ page }) => {
+test('CSV import requires a valid preview and rejects unsupported statuses', async ({ page }, testInfo) => {
   await openBlankWorkspace(page);
   await page.goto('/reports');
   await page.getByRole('button', { name: 'Import tracker CSV', exact: true }).click();
@@ -39,6 +43,7 @@ test('CSV import requires a valid preview and rejects unsupported statuses', asy
     name: 'valid-tracker.csv', mimeType: 'text/csv', buffer: Buffer.from('Task,Status\r\n"Imported, checked task",Open'),
   });
   await expect(dialog.getByRole('button', { name: 'Import 1 tasks', exact: true })).toBeEnabled();
+  await page.screenshot({ path: testInfo.outputPath('csv-import-validated-preview.png'), fullPage: true });
   await dialog.getByRole('button', { name: 'Import 1 tasks', exact: true }).click();
   await expect(dialog).toBeHidden();
   await page.goto('/tasks');

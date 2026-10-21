@@ -3,7 +3,7 @@
 }
 .executive-filter-grid {
   display: grid;
-  grid-template-columns: repeat(4, minmax(0, 1fr));
+  grid-template-columns: repeat(auto-fit, minmax(min(10rem, 100%), 1fr));
   gap: var(--space-4);
 }
 .executive-filter-grid input,
@@ -12,7 +12,7 @@
 }
 .executive-kpis {
   display: grid;
-  grid-template-columns: repeat(4, minmax(0, 1fr));
+  grid-template-columns: repeat(auto-fit, minmax(min(12rem, 100%), 1fr));
   gap: var(--space-4);
 }
 .executive-kpi {
@@ -157,7 +157,7 @@
 .executive-empty {
   padding-block: var(--space-6);
 }
-@media (max-width: 1200px) {
+@media (max-width: 1440px) {
   .executive-main-grid {
     grid-template-columns: 1fr;
   }
