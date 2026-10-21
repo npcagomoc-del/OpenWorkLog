@@ -8,6 +8,7 @@ import { Shell } from './app/Shell';
 import { Welcome } from './app/Welcome';
 import { Button, EmptyState, Notice, Spinner, ToastProvider } from './components/ui';
 const DashboardPage = lazy(() => import('./features/dashboard/DashboardPage'));
+const ExecutivePage = lazy(() => import('./features/executive/ExecutivePage'));
 const TasksPage = lazy(() => import('./features/tasks/TasksPage'));
 const ProjectsPage = lazy(() => import('./features/tasks/ProjectsPage'));
 const CalendarPage = lazy(() => import('./features/calendar/CalendarPage'));
@@ -55,6 +56,7 @@ function WorkspaceApp() {
           <Routes>
             <Route element={<Shell />}>
               <Route index element={<DashboardPage />} />
+              <Route path="executive" element={<ExecutivePage />} />
               <Route path="tasks" element={<TasksPage />} />
               <Route path="projects" element={<ProjectsPage />} />
               <Route path="calendar" element={<CalendarPage />} />

@@ -5,11 +5,13 @@ import {
   FolderKanban,
   House,
   ListTodo,
+  Presentation,
   Settings2,
   SquarePen,
 } from 'lucide-react';
 export const navigation = [
   { to: '/', label: 'Dashboard', icon: House },
+  { to: '/executive', label: 'Executive', icon: Presentation },
   { to: '/tasks', label: 'My Tasks', icon: ListTodo },
   { to: '/projects', label: 'Projects', icon: FolderKanban },
   { to: '/calendar', label: 'Calendar', icon: CalendarDays },
