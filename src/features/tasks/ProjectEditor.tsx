@@ -3,6 +3,7 @@ import { Button, Field, Modal, Notice, useToast } from '../../components/ui';
 import { actions } from '../../data/actions';
 import { useWorkspace } from '../../data/useWorkspace';
 import type { Project, ProjectCreateInput } from '../../domain/models';
+import { BusinessUnitField } from './BusinessUnitField';
 import { statuses } from './taskLogic';
 
 const blank: ProjectCreateInput = {
@@ -14,6 +15,7 @@ const blank: ProjectCreateInput = {
   owner: '',
   link: '',
   archived: false,
+  businessUnit: '',
 };
 export function ProjectEditor({
   project,
@@ -22,7 +24,7 @@ export function ProjectEditor({
   readonly project: Project | null;
   readonly onClose: () => void;
 }) {
-  const { categories } = useWorkspace();
+  const { categories, settings } = useWorkspace();
   const [draft, setDraft] = useState<ProjectCreateInput>(project ?? blank);
   const [error, setError] = useState('');
   const [busy, setBusy] = useState(false);
@@ -111,6 +113,12 @@ export function ProjectEditor({
                 ))}
             </select>
           </Field>
+          <BusinessUnitField
+            id="project-business-unit"
+            value={draft.businessUnit ?? ''}
+            units={settings.businessUnits}
+            onChange={(businessUnit) => setDraft({ ...draft, businessUnit })}
+          />
           <Field label="Owner" htmlFor="project-owner">
             <input
               id="project-owner"

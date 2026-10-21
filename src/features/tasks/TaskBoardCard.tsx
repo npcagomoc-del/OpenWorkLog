@@ -1,53 +1,53 @@
 import { useDraggable } from '@dnd-kit/core';
-import { GripVertical, Trash2 } from 'lucide-react';
-import { IconButton } from '../../components/ui';
+import { GripVertical } from 'lucide-react';
+
 import type { Task } from '../../domain/models';
-import { TaskName, TaskStatus } from './TaskControls';
+import { TaskActions, TaskName, TaskStatus } from './TaskControls';
 import type { TaskViewProps } from './taskViewTypes';
-
-type CardProps = Pick<TaskViewProps, 'onEdit' | 'onRename' | 'onDelete' | 'onStatus'> & {
-  readonly task: Task;
-  readonly category: string;
-  readonly project: string | undefined;
-};
-
-export function TaskBoardCard({ task, category, project, ...callbacks }: CardProps) {
+export function TaskBoardCard({ task, ...props }: TaskViewProps & { readonly task: Task }) {
   const { attributes, listeners, setNodeRef, setActivatorNodeRef, isDragging } = useDraggable({
     id: task.id,
   });
+  const { preferences, categories, projects } = props;
+  const fields = preferences.fields;
+  const details = [
+    fields.category && preferences.groupBy !== 'category'
+      ? categories.find((item) => item.id === task.categoryId)?.name
+      : '',
+    fields.project && preferences.groupBy !== 'project'
+      ? projects.find((item) => item.id === task.projectId)?.name
+      : '',
+    fields.businessUnit && preferences.groupBy !== 'businessUnit' ? task.businessUnit : '',
+    fields.dueDate ? task.dueDate : '',
+    fields.priority && task.priority !== 'Normal' ? `${task.priority} priority` : '',
+    fields.assignee ? task.assignee : '',
+  ].filter(Boolean);
   return (
     <article
       ref={setNodeRef}
       className={`card task-board-card${isDragging ? ' task-board-card--dragging' : ''}`}
     >
-      <div className="split">
-        <span className="small muted">{category}</span>
+      <div className="task-card-tools">
         <button
           id={`task-drag-${task.id}`}
-          type="button"
           ref={setActivatorNodeRef}
+          type="button"
           {...attributes}
           {...listeners}
           className="icon-button task-drag-handle"
           aria-label={`Drag ${task.title}`}
-          title="Drag to another status. Keyboard: Space, arrows, Space."
+          title="Drag to another group. Keyboard: Space, arrows, Space."
         >
           <GripVertical size={18} />
         </button>
+        {preferences.groupBy !== 'status' && <TaskStatus task={task} onStatus={props.onStatus} />}
+        <TaskActions {...props} task={task} />
       </div>
-      <TaskName task={task} onRename={callbacks.onRename} onEdit={callbacks.onEdit} />
-      {project && <span className="small muted">{project}</span>}
-      {task.latestUpdate && <p className="small task-update">{task.latestUpdate}</p>}
-      <div className="split">
-        <span className="small muted">{task.dueDate || 'No due date'}</span>
-        <IconButton label={`Delete ${task.title}`} onClick={() => callbacks.onDelete(task)}>
-          <Trash2 size={16} />
-        </IconButton>
-      </div>
-      <label className="small muted" htmlFor={`task-status-${task.id}`}>
-        Move to
-        <TaskStatus task={task} onStatus={callbacks.onStatus} />
-      </label>
+      <TaskName task={task} onEdit={props.onEdit} />
+      {details.length > 0 && <p className="small muted task-card-meta">{details.join(' · ')}</p>}
+      {fields.latestUpdate && task.latestUpdate && (
+        <p className="small task-update">{task.latestUpdate}</p>
+      )}
     </article>
   );
 }

@@ -1,6 +1,6 @@
 import type { Task } from '../../domain/models';
-
-export const statuses = ['Open', 'In Progress', 'Closed'] as const;
+import { isTerminalStatus, STATUS_VALUES } from '../../domain/models';
+export const statuses = STATUS_VALUES;
 export const workTypes = ['task', 'operational', 'project'] as const;
 export const priorities = ['Low', 'Normal', 'High'] as const;
 export type TaskFilters = {
@@ -8,8 +8,9 @@ export type TaskFilters = {
   readonly status: string;
   readonly categoryId: string;
   readonly type: string;
+  readonly projectId?: string;
+  readonly businessUnit?: string;
 };
-
 export function filterTasks(tasks: readonly Task[], filters: TaskFilters): Task[] {
   const query = filters.query.trim().toLocaleLowerCase();
   return tasks
@@ -19,6 +20,8 @@ export function filterTasks(tasks: readonly Task[], filters: TaskFilters): Task[
         (!filters.status || task.status === filters.status) &&
         (!filters.categoryId || task.categoryId === filters.categoryId) &&
         (!filters.type || task.type === filters.type) &&
+        (!filters.projectId || task.projectId === filters.projectId) &&
+        (!filters.businessUnit || task.businessUnit === filters.businessUnit) &&
         (!query ||
           [
             task.title,
@@ -27,6 +30,7 @@ export function filterTasks(tasks: readonly Task[], filters: TaskFilters): Task[
             task.ticket,
             task.assignee,
             task.latestUpdate,
+            task.businessUnit ?? '',
           ].some((value) => value.toLocaleLowerCase().includes(query))),
     )
     .sort(
@@ -35,7 +39,6 @@ export function filterTasks(tasks: readonly Task[], filters: TaskFilters): Task[
         right.updatedAt.localeCompare(left.updatedAt),
     );
 }
-
 export function taskCounts(tasks: readonly Task[], today: string) {
   const active = tasks.filter((task) => !task.archived);
   return {
@@ -43,7 +46,7 @@ export function taskCounts(tasks: readonly Task[], today: string) {
     progress: active.filter((task) => task.status === 'In Progress').length,
     closed: active.filter((task) => task.status === 'Closed').length,
     overdue: active.filter(
-      (task) => task.status !== 'Closed' && task.dueDate && task.dueDate < today,
+      (task) => !isTerminalStatus(task.status) && task.dueDate && task.dueDate < today,
     ).length,
   };
 }

@@ -1,17 +1,23 @@
-import { CalendarDays, Trash2 } from 'lucide-react';
-import { Badge, Card, IconButton, StatusBadge } from '../../components/ui';
+import { Card } from '../../components/ui';
 import type { Task } from '../../domain/models';
 import { TaskBoard } from './TaskBoard';
-import { TaskName, TaskStatus } from './TaskControls';
+import { TaskActions, TaskName, TaskStatus } from './TaskControls';
 import type { TaskViewProps } from './taskViewTypes';
-
 export function TaskViews(props: TaskViewProps) {
-  const { tasks, view, categories, projects, settings, onEdit, onDelete, onRename, onStatus } =
-    props;
-  const categoryName = (task: Task) =>
-    categories.find((category) => category.id === task.categoryId)?.name ?? 'Uncategorized';
-  const projectName = (task: Task) =>
-    projects.find((project) => project.id === task.projectId)?.name;
+  const { tasks, view, categories, projects, preferences, onEdit, onStatus } = props;
+  const fields = preferences.fields;
+  const metadata = (task: Task) =>
+    [
+      fields.category ? categories.find((item) => item.id === task.categoryId)?.name : '',
+      fields.project ? projects.find((item) => item.id === task.projectId)?.name : '',
+      fields.businessUnit ? task.businessUnit : '',
+      fields.dueDate ? task.dueDate : '',
+      fields.assignee ? task.assignee : '',
+      fields.priority && task.priority !== 'Normal' ? `${task.priority} priority` : '',
+    ]
+      .filter(Boolean)
+      .join(' · ');
+  if (view === 'board') return <TaskBoard {...props} />;
   if (view === 'table')
     return (
       <Card className="table-scroll">
@@ -19,46 +25,28 @@ export function TaskViews(props: TaskViewProps) {
           <caption className="visually-hidden">Task tracker</caption>
           <thead>
             <tr>
-              {[
-                'ID',
-                'Task',
-                'Category',
-                'By whom',
-                'By when',
-                'Status',
-                'Latest update',
-                'Actions',
-              ].map((label) => (
-                <th key={label} scope="col">
-                  {label}
-                </th>
-              ))}
+              <th scope="col">Task</th>
+              <th scope="col">Details</th>
+              <th scope="col">Status</th>
+              {fields.latestUpdate && <th scope="col">Latest update</th>}
+              <th scope="col">
+                <span className="visually-hidden">Actions</span>
+              </th>
             </tr>
           </thead>
           <tbody>
             {tasks.map((task) => (
               <tr key={task.id}>
                 <td>
-                  <span className="small muted" title={task.id}>
-                    {task.id.slice(0, 8)}
-                  </span>
+                  <TaskName task={task} onEdit={onEdit} />
                 </td>
+                <td className="small muted">{metadata(task) || '—'}</td>
                 <td>
-                  <TaskName task={task} onRename={onRename} onEdit={onEdit} />
-                  {projectName(task) && <span className="small muted">{projectName(task)}</span>}
-                </td>
-                <td>{categoryName(task)}</td>
-                <td>{task.assignee || '—'}</td>
-                <td>{task.dueDate || '—'}</td>
-                <td>
-                  <StatusBadge status={task.status} />
                   <TaskStatus task={task} onStatus={onStatus} />
                 </td>
-                <td>{task.latestUpdate || '—'}</td>
+                {fields.latestUpdate && <td>{task.latestUpdate || '—'}</td>}
                 <td>
-                  <IconButton label={`Delete ${task.title}`} onClick={() => onDelete(task)}>
-                    <Trash2 size={17} />
-                  </IconButton>
+                  <TaskActions {...props} task={task} />
                 </td>
               </tr>
             ))}
@@ -66,40 +54,20 @@ export function TaskViews(props: TaskViewProps) {
         </table>
       </Card>
     );
-  if (view === 'board') return <TaskBoard {...props} />;
   return (
     <Card className="task-list">
       {tasks.map((task) => (
         <article key={task.id} className="task-row">
           <div className="task-row-main">
-            <div className="cluster">
-              <TaskName task={task} onRename={onRename} onEdit={onEdit} />
-              {task.priority === 'High' && <Badge tone="yellow">High priority</Badge>}
-            </div>
-            <div className="cluster small muted">
-              <span>{categoryName(task)}</span>
-              <span>{settings.typeLabels[task.type]}</span>
-              {projectName(task) && <span>{projectName(task)}</span>}
-              {task.dueDate && (
-                <span className="cluster task-due">
-                  <CalendarDays size={14} />
-                  {task.dueDate}
-                </span>
-              )}
-              {task.subtasks.length > 0 && (
-                <span>
-                  {task.subtasks.filter((item) => item.done).length}/{task.subtasks.length} steps
-                </span>
-              )}
-            </div>
-            {task.latestUpdate && <p className="task-update small muted">{task.latestUpdate}</p>}
+            <TaskName task={task} onEdit={onEdit} />
+            {metadata(task) && <div className="small muted task-row-meta">{metadata(task)}</div>}
+            {fields.latestUpdate && task.latestUpdate && (
+              <p className="task-update small muted">{task.latestUpdate}</p>
+            )}
           </div>
           <div className="task-row-actions">
-            <StatusBadge status={task.status} />
             <TaskStatus task={task} onStatus={onStatus} />
-            <IconButton label={`Delete ${task.title}`} onClick={() => onDelete(task)}>
-              <Trash2 size={17} />
-            </IconButton>
+            <TaskActions {...props} task={task} />
           </div>
         </article>
       ))}

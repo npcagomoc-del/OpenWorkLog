@@ -4,6 +4,7 @@ import { Button, Field, Modal, Notice, useToast } from '../../components/ui';
 import { actions } from '../../data/actions';
 import { useWorkspace } from '../../data/useWorkspace';
 import type { Task, WorkType } from '../../domain/models';
+import { BusinessUnitField } from './BusinessUnitField';
 import { TaskSubtasks } from './TaskSubtasks';
 import { priorities, statuses, workTypes } from './taskLogic';
 
@@ -22,6 +23,7 @@ const blankTask: TaskInput = {
   latestUpdate: '',
   subtasks: [],
   archived: false,
+  businessUnit: '',
 };
 
 export function TaskEditor({
@@ -37,7 +39,12 @@ export function TaskEditor({
 }) {
   const { categories, projects, settings } = useWorkspace();
   const [draft, setDraft] = useState<TaskInput>(
-    task ?? { ...blankTask, projectId: initialProjectId, type: initialType },
+    task ?? {
+      ...blankTask,
+      projectId: initialProjectId,
+      type: initialType,
+      businessUnit: projects.find((project) => project.id === initialProjectId)?.businessUnit ?? '',
+    },
   );
   const [error, setError] = useState('');
   const [busy, setBusy] = useState(false);
@@ -146,7 +153,14 @@ export function TaskEditor({
             <select
               id="task-project"
               value={draft.projectId ?? ''}
-              onChange={(event) => setDraft({ ...draft, projectId: event.target.value || null })}
+              onChange={(event) => {
+                const project = projects.find((item) => item.id === event.target.value);
+                setDraft({
+                  ...draft,
+                  projectId: project?.id ?? null,
+                  businessUnit: task ? draft.businessUnit : (project?.businessUnit ?? ''),
+                });
+              }}
             >
               <option value="">No project</option>
               {projects
@@ -158,6 +172,12 @@ export function TaskEditor({
                 ))}
             </select>
           </Field>
+          <BusinessUnitField
+            id="task-business-unit"
+            value={draft.businessUnit ?? ''}
+            units={settings.businessUnits}
+            onChange={(businessUnit) => setDraft({ ...draft, businessUnit })}
+          />
           <Field label="By whom" htmlFor="task-owner">
             <input
               id="task-owner"

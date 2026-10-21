@@ -1,0 +1,70 @@
+import { expect, test } from '@playwright/test';
+import { createTask, openBlankWorkspace } from './workspace';
+test('compact task rows have one status control and title opens editor', async ({ page }, info) => {
+  await openBlankWorkspace(page); await createTask(page, 'Compact review');
+  const row = page.locator('.task-row').filter({ hasText: 'Compact review' });
+  await expect(row.locator('select')).toHaveCount(1);
+  await expect(row.getByRole('button', { name: /Rename|Delete/ })).toHaveCount(0);
+  const bounds = await row.boundingBox(); expect(bounds?.height).toBeLessThanOrEqual(70); await page.screenshot({ path: info.outputPath('compact-list.png') });
+  await row.getByRole('button', { name: 'Compact review', exact: true }).click();
+  await expect(page.getByRole('dialog', { name: 'Edit task', exact: true })).toBeVisible();
+});
+test('all five status columns, category move, hidden groups and preferences persist', async ({ page }, info) => {
+  await openBlankWorkspace(page); await createTask(page, 'Grouped review');
+  await page.getByRole('button', { name: 'Kanban', exact: true }).click();
+  await expect(page.locator('.task-board-column')).toHaveCount(5);
+  await page.getByLabel('Group by', { exact: true }).selectOption('category');
+  const group = page.getByRole('region', { name: 'Uncategorized tasks', exact: true });
+  await expect(group.getByRole('button', { name: 'Grouped review', exact: true })).toBeVisible();
+  await page.getByRole('button', { name: 'Actions for Grouped review', exact: true }).click();
+  const modal = page.getByRole('dialog', { name: 'Task actions: Grouped review' });
+  const options = modal.getByLabel('Move Grouped review to group').locator('option');
+  const destination = await options.nth(2).getAttribute('value');
+  expect(destination).toBeTruthy();
+  if (!destination) throw new Error('A seeded category destination is required');
+  await modal.getByLabel('Move Grouped review to group').selectOption(destination);
+  await expect(group.getByRole('button', { name: 'Grouped review', exact: true })).toHaveCount(0);
+  await page.getByRole('button', { name: 'Card details', exact: true }).click();
+  await page.getByRole('dialog', { name: 'Card details', exact: true }).getByLabel('Due date', { exact: true }).uncheck();
+  await page.getByRole('dialog', { name: 'Card details', exact: true }).getByLabel('Uncategorized', { exact: true }).uncheck();
+  await page.getByRole('button', { name: 'Done', exact: true }).click(); await page.reload();
+  await expect(page.getByLabel('Group by')).toHaveValue('category');
+  await expect(page.getByRole('region', { name: 'Uncategorized tasks', exact: true })).toHaveCount(0);
+  await expect(page.getByRole('button', { name: 'Grouped review', exact: true })).toBeVisible();
+  await page.screenshot({ path: info.outputPath('grouped-board.png') });
+});
+test('business unit field filters all views and saves with task', async ({ page }) => {
+  await openBlankWorkspace(page); await createTask(page, 'Unit review');
+  await page.getByRole('button', { name: 'Unit review', exact: true }).click();
+  await page.getByRole('dialog', { name: 'Edit task', exact: true }).getByLabel('Business Unit', { exact: true }).fill('Operations');
+  await page.getByRole('button', { name: 'Save task' }).click();
+  await page.getByRole('button', { name: 'Filters', exact: true }).click();
+  await page.getByRole('dialog', { name: 'Task filters' }).getByLabel('Business Unit', { exact: true }).fill('Finance');
+  await page.getByRole('button', { name: 'Done', exact: true }).click();
+  await expect(page.getByText('No matching tasks', { exact: true })).toBeVisible();
+  await page.getByRole('button', { name: 'Clear filters', exact: true }).click();
+  await expect(page.getByRole('button', { name: 'Unit review', exact: true })).toBeVisible();
+});
+
+
+test('selected project supplies a unit and an explicit cleared task unit stays unassigned', async ({ page }) => {
+  await openBlankWorkspace(page);
+  await page.goto('/projects'); await page.getByRole('button', { name: 'New project', exact: true }).click();
+  const project = page.getByRole('dialog', { name: 'New project', exact: true });
+  await project.getByLabel('Project name', { exact: true }).fill('NPC project');
+  await project.getByLabel('Business Unit', { exact: true }).fill('NPC');
+  await project.getByRole('button', { name: 'Save project', exact: true }).click();
+  await page.goto('/tasks'); await page.getByRole('button', { name: 'New task', exact: true }).click();
+  const task = page.getByRole('dialog', { name: 'New task', exact: true });
+  await task.getByLabel('Task', { exact: true }).fill('Inherited unit');
+  await task.getByLabel('Parent project', { exact: true }).selectOption({ label: 'NPC project' });
+  await expect(task.getByLabel('Business Unit', { exact: true })).toHaveValue('NPC');
+  await task.getByRole('button', { name: 'Save task' }).click();
+  await page.getByRole('button', { name: 'Inherited unit', exact: true }).click();
+  const editor = page.getByRole('dialog', { name: 'Edit task', exact: true });
+  await expect(editor.getByLabel('Business Unit', { exact: true })).toHaveValue('NPC');
+  await editor.getByLabel('Business Unit', { exact: true }).fill('');
+  await editor.getByRole('button', { name: 'Save task', exact: true }).click(); await page.reload();
+  await page.getByRole('button', { name: 'Inherited unit', exact: true }).click();
+  await expect(editor.getByLabel('Business Unit', { exact: true })).toHaveValue('');
+});

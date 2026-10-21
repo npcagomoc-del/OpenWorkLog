@@ -6,9 +6,11 @@ test('renamed tasks and changed status survive database reopen', async ({ page, 
   await openBlankWorkspace(page);
   await createTask(page, 'Prepare vessel checklist');
   // When its title and status change, then the same browser reopens the origin.
-  await page.getByRole('button', { name: 'Rename Prepare vessel checklist', exact: true }).click();
-  await page.getByLabel('Rename task', { exact: true }).fill('Review vessel checklist');
-  await page.getByRole('button', { name: 'Save', exact: true }).click();
+  await page.getByRole('button', { name: 'Prepare vessel checklist', exact: true }).click();
+  const taskEditor = page.getByRole('dialog', { name: 'Edit task', exact: true });
+  await taskEditor.getByLabel('Task', { exact: true }).fill('Review vessel checklist');
+  await taskEditor.getByRole('button', { name: 'Save task', exact: true }).click();
+  await expect(taskEditor).toBeHidden();
   await page.getByLabel('Move Review vessel checklist to status').selectOption('In Progress');
   await expect(page.getByLabel('Move Review vessel checklist to status')).toHaveValue('In Progress');
   await page.close();

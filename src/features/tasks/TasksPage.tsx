@@ -10,10 +10,14 @@ import type { Status, Task } from '../../domain/models';
 import { todayKey } from '../../domain/time';
 import { downloadText } from '../../lib/download';
 import { TaskEditor } from './TaskEditor';
+import { TaskSummary } from './TaskSummary';
 import { TaskToolbar } from './TaskToolbar';
 import { TaskViews } from './TaskViews';
+import { taskGroups } from './taskGroups';
 import type { TaskFilters } from './taskLogic';
-import { filterTasks, taskCounts, workTypes } from './taskLogic';
+import { filterTasks, workTypes } from './taskLogic';
+import type { TaskGroup } from './taskViewTypes';
+import { useTaskPreferences } from './useTaskPreferences';
 import './tasks.css';
 
 export default function TasksPage() {
@@ -25,7 +29,10 @@ export default function TasksPage() {
     categoryId: '',
     type: params.get('type') ?? '',
   });
-  const [view, setView] = useState<'list' | 'table' | 'board'>('list');
+  const { preferences, savePreferences } = useTaskPreferences(workspace.settings);
+  const groups = taskGroups({ ...workspace.settings, taskView: preferences }, workspace);
+  const visibleGroups = groups.filter((group) => !preferences.hiddenGroups.includes(group.id));
+
   const [editor, setEditor] = useState<{ readonly task: Task | null } | null>(null);
   const [deleting, setDeleting] = useState<Task | null>(null);
   const [busy, setBusy] = useState(false);
@@ -46,21 +53,21 @@ export default function TasksPage() {
       ),
     [workspace.tasks, filters, projectId],
   );
-  const counts = taskCounts(workspace.tasks, todayKey(new Date(), workspace.settings.timezone));
-  async function rename(task: Task, title: string) {
-    try {
-      await actions.updateTask(task.id, { title });
-      toast('Task renamed');
-      return true;
-    } catch (cause) {
-      toast(cause instanceof Error ? cause.message : 'Unable to rename task', 'error');
-      return false;
-    }
-  }
+
   async function move(task: Task, next: Status) {
     try {
       await actions.updateTask(task.id, { status: next });
       toast(`Moved to ${next}`);
+      return true;
+    } catch (cause) {
+      toast(cause instanceof Error ? cause.message : 'Unable to move task', 'error');
+      return false;
+    }
+  }
+  async function moveGroup(task: Task, group: TaskGroup) {
+    try {
+      await actions.updateTask(task.id, group.patch);
+      toast(`Moved to ${group.label}`);
       return true;
     } catch (cause) {
       toast(cause instanceof Error ? cause.message : 'Unable to move task', 'error');
@@ -99,26 +106,21 @@ export default function TasksPage() {
           </>
         }
       />
-      <div className="stat-grid task-stats">
-        {[
-          { label: 'Open', value: counts.open, tone: 'open' },
-          { label: 'In progress', value: counts.progress, tone: 'progress' },
-          { label: 'Closed', value: counts.closed, tone: 'closed' },
-          { label: 'Overdue', value: counts.overdue, tone: 'overdue' },
-        ].map((item) => (
-          <Card className={`stat-card task-stat task-stat--${item.tone}`} key={item.label}>
-            <span className="small muted">{item.label}</span>
-            <strong>{item.value}</strong>
-          </Card>
-        ))}
-      </div>
+      <TaskSummary
+        tasks={workspace.tasks}
+        today={todayKey(new Date(), workspace.settings.timezone)}
+      />
       <TaskToolbar
         filters={filters}
         onFilter={(patch) => setFilters((current) => ({ ...current, ...patch }))}
         categories={workspace.categories}
-        typeLabels={workspace.settings.typeLabels}
-        view={view}
-        onView={setView}
+        projects={workspace.projects}
+        settings={workspace.settings}
+        preferences={preferences}
+        groups={groups}
+        onPreferences={(next) => {
+          void savePreferences(next);
+        }}
         onExport={() =>
           downloadText(
             `task-tracker-${todayKey()}.csv`,
@@ -160,10 +162,12 @@ export default function TasksPage() {
           categories={workspace.categories}
           projects={workspace.projects}
           settings={workspace.settings}
-          view={view}
+          view={preferences.view}
           onEdit={(task) => setEditor({ task })}
           onDelete={setDeleting}
-          onRename={rename}
+          preferences={preferences}
+          groups={visibleGroups}
+          onMove={moveGroup}
           onStatus={move}
         />
       ) : (
@@ -176,8 +180,27 @@ export default function TasksPage() {
                 : 'Give your work a name, an owner and a next step.'
             }
             action={
-              <Button variant="primary" onClick={() => setEditor({ task: null })}>
-                Create task
+              <Button
+                variant="primary"
+                onClick={() => {
+                  if (workspace.tasks.length) {
+                    setFilters({
+                      query: '',
+                      status: '',
+                      categoryId: '',
+                      type: '',
+                      projectId: '',
+                      businessUnit: '',
+                    });
+                    const next = new URLSearchParams(params);
+                    next.delete('project');
+                    next.delete('search');
+                    next.delete('type');
+                    setParams(next);
+                  } else setEditor({ task: null });
+                }}
+              >
+                {workspace.tasks.length ? 'Clear filters' : 'Create task'}
               </Button>
             }
           />
