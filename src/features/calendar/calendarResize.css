@@ -1,3 +1,6 @@
+.calendar-time-grid {
+  --calendar-lane-min: 9.25rem;
+}
 .calendar-day-track .calendar-block {
   overflow: visible;
 }
@@ -8,7 +11,7 @@
 .calendar-resize-handle {
   position: absolute;
   z-index: 2;
-  left: 0;
+  left: calc(50% - 22px);
   width: 44px;
   height: 44px;
   min-height: 44px;

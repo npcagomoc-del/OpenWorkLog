@@ -39,6 +39,13 @@ export function CalendarTimeGrid({
   const start = workHours ? Math.floor(settings.workStart / 30) * 30 : 0;
   const end = workHours ? Math.ceil(settings.workEnd / 30) * 30 : 1440;
   const slots = Array.from({ length: (end - start) / 30 }, (_, index) => start + index * 30);
+  const days = dates.map((date) => {
+    const positioned = planLanes(
+      plansForDate(plans, date).filter((plan) => plan.endMinute > start && plan.startMinute < end),
+    );
+    return { date, positioned, laneCount: Math.max(1, ...positioned.map((item) => item.lane + 1)) };
+  });
+  const totalLanes = days.reduce((total, day) => total + day.laneCount, 0);
   const drag = useCalendarDrag({ dates, slots, plans });
   return (
     <DndContext
@@ -76,7 +83,10 @@ export function CalendarTimeGrid({
       >
         <div
           className={`calendar-time-grid ${dates.length > 1 ? 'calendar-time-grid--week' : ''}`}
-          style={{ gridTemplateColumns: `4rem repeat(${dates.length}, minmax(0, 1fr))` }}
+          style={{
+            gridTemplateColumns: `4rem ${days.map((day) => `minmax(calc(var(--calendar-lane-min) * ${day.laneCount}), 1fr)`).join(' ')}`,
+            minWidth: `calc(4rem + var(--calendar-lane-min) * ${totalLanes})`,
+          }}
         >
           <div className="calendar-time-corner">24h</div>
           {dates.map((date) => (
@@ -95,13 +105,7 @@ export function CalendarTimeGrid({
               <div key={minute}>{timeInput(minute)}</div>
             ))}
           </div>
-          {dates.map((date) => {
-            const positioned = planLanes(
-              plansForDate(plans, date).filter(
-                (plan) => plan.endMinute > start && plan.startMinute < end,
-              ),
-            );
-            const laneCount = Math.max(1, ...positioned.map((item) => item.lane + 1));
+          {days.map(({ date, positioned, laneCount }) => {
             return (
               <div
                 className="calendar-day-track"
