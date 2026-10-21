@@ -12,9 +12,11 @@ test('backup preview requires confirmation and restore replaces changed data', a
   const backupPath = testInfo.outputPath('workspace-backup.json');
   await download.saveAs(backupPath);
   await page.goto('/tasks');
-  await page.getByRole('button', { name: 'Rename Original inspection', exact: true }).click();
-  await page.getByLabel('Rename task', { exact: true }).fill('Changed after backup');
-  await page.getByRole('button', { name: 'Save', exact: true }).click();
+  await page.getByRole('button', { name: 'Original inspection', exact: true }).click();
+  const taskEditor = page.getByRole('dialog', { name: 'Edit task', exact: true });
+  await taskEditor.getByLabel('Task', { exact: true }).fill('Changed after backup');
+  await taskEditor.getByRole('button', { name: 'Save task', exact: true }).click();
+  await expect(taskEditor).toBeHidden();
   await expect(page.getByRole('button', { name: 'Changed after backup', exact: true })).toBeVisible();
   await page.goto('/settings');
   // When a backup is selected, only its preview is displayed.

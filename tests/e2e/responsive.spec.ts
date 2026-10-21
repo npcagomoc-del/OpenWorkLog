@@ -1,5 +1,5 @@
 import { test, expect, type Page } from '@playwright/test';
-import { openDemoWorkspace } from './workspace';
+import { createTask, openDemoWorkspace } from './workspace';
 
 const sizes = [
   { name: 'phone-375', width: 375, height: 812 },
@@ -12,6 +12,18 @@ const routes = ['/', '/executive', '/tasks', '/projects', '/calendar', '/daily',
 
 
 async function prepareLinkedWork(page: Page): Promise<void> {
+  for (const [title, status, unit] of [
+    ['QA · Awaiting vendor approval with a long title', 'On Hold', 'Marine operations'],
+    ['QA · Cancelled device change', 'Cancelled', 'Office operations'],
+  ] as const) {
+    await createTask(page, title);
+    await page.getByRole('button', { name: title, exact: true }).click();
+    const task = page.getByRole('dialog', { name: 'Edit task', exact: true });
+    await task.getByLabel('Business Unit', { exact: true }).fill(unit);
+    await task.getByRole('button', { name: 'Save task', exact: true }).click();
+    await expect(task).toBeHidden();
+    await page.getByLabel(`Move ${title} to status`, { exact: true }).selectOption(status);
+  }
   await page.goto('/calendar');
   await page.getByRole('button', { name: 'New plan', exact: true }).click();
   const plan = page.getByRole('dialog', { name: 'Plan your time' });
@@ -92,7 +104,7 @@ for (const size of sizes) {
           for (const view of ['Table', 'Kanban']) {
             await page.getByRole('button', { name: view, exact: true }).click();
             if (view === 'Table') {
-              const fit = await page.locator('.task-table .task-status-select--progress').first().evaluate((element) => {
+              const fit = await page.locator('.task-table .status-control--progress').first().evaluate((element) => {
                 const style = getComputedStyle(element);
                 const context = document.createElement('canvas').getContext('2d');
                 if (!context) throw new Error('Canvas text measurement is unavailable');
@@ -105,8 +117,18 @@ for (const size of sizes) {
               expect(fit.width, 'Table status select must fit the full In Progress label plus native arrow').toBeGreaterThanOrEqual(fit.required);
             }
             await capture(`tasks-${view.toLowerCase()}-light`);
-            await page.locator(view === 'Table' ? '.task-table' : '.task-board').scrollIntoViewIfNeeded();
+            await page.locator(view === 'Table' ? '.task-table' : '.task-board-viewport').scrollIntoViewIfNeeded();
             await capture(`tasks-${view.toLowerCase()}-body-light`);
+            if (view === 'Kanban') {
+              const board = page.locator('.task-board-viewport');
+              await board.evaluate(element => { element.scrollLeft = element.scrollWidth; });
+              await capture('tasks-status-right-light');
+              for (const group of ['Category', 'Project', 'Business Unit']) {
+                await page.getByLabel('Group by', { exact: true }).selectOption({ label: group });
+                await capture(`tasks-group-${group.toLowerCase().replaceAll(' ', '-')}-light`);
+              }
+              await page.getByLabel('Group by', { exact: true }).selectOption({ label: 'Status' });
+            }
           }
           break;
         case '/calendar':
@@ -221,6 +243,11 @@ for (const size of sizes) {
       await capture(`${route.replaceAll('/', '') || 'dashboard'}-super-dark`);
       if (route === '/executive') {
         await captureExecutive('super-dark');
+      }
+      if (route === '/tasks') {
+        await page.getByRole('button', { name: 'Kanban', exact: true }).click();
+        await page.locator('.task-board-viewport').evaluate(element => { element.scrollLeft = element.scrollWidth; });
+        await capture('tasks-status-right-super-dark');
       }
     }
     await page.goto('/tasks');

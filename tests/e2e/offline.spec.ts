@@ -10,9 +10,11 @@ test('production service worker reopens and edits saved work offline', async ({ 
   await context.setOffline(true);
   await page.reload();
   await expect(page.getByRole('button', { name: 'Offline inspection', exact: true })).toBeVisible();
-  await page.getByRole('button', { name: 'Rename Offline inspection', exact: true }).click();
-  await page.getByLabel('Rename task', { exact: true }).fill('Inspection saved offline');
-  await page.getByRole('button', { name: 'Save', exact: true }).click();
+  await page.getByRole('button', { name: 'Offline inspection', exact: true }).click();
+  const taskEditor = page.getByRole('dialog', { name: 'Edit task', exact: true });
+  await taskEditor.getByLabel('Task', { exact: true }).fill('Inspection saved offline');
+  await taskEditor.getByRole('button', { name: 'Save task', exact: true }).click();
+  await expect(taskEditor).toBeHidden();
   await expect(page.getByRole('button', { name: 'Inspection saved offline', exact: true })).toBeVisible();
   await page.reload();
   await expect(page.getByRole('button', { name: 'Inspection saved offline', exact: true })).toBeVisible();

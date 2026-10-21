@@ -91,7 +91,7 @@ test('a planned daily activity is visible in Calendar and its row timer updates 
   await page.goto('/daily');
   const picker = page.getByLabel('Planned work', { exact: true });
   await expect(picker.locator('option').filter({ hasText: title })).toHaveCount(1);
-  await page.getByRole('button', { name: `Start timer for ${title} at 13:00`, exact: true }).click();
+  await page.getByRole('button', { name: `Start timer for ${title}`, exact: true }).click();
   await expect(page.getByRole('button', { name: 'Pause', exact: true })).toBeVisible();
   await expect(page.locator('.timer-plan-context')).toContainText('13:00–14:00');
   await page.clock.setFixedTime(new Date('2026-10-21T05:30:00Z'));
@@ -127,7 +127,7 @@ test('an actual-only daily source stays one entry when more timer work is saved'
   await openBlankWorkspace(page);
   const title = 'Resolve printer request';
   await addDailyActivity(page, title);
-  await page.getByRole('button', { name: `Start timer for ${title} at 09:00`, exact: true }).click();
+  await page.getByRole('button', { name: `Start timer for ${title}`, exact: true }).click();
   await expect(page.getByRole('button', { name: 'Pause', exact: true })).toBeVisible();
   await expect(page.getByRole('link', { name: 'Open linked daily entry', exact: true })).toBeVisible();
   await page.clock.setFixedTime(new Date('2026-10-21T02:10:00Z'));
