@@ -49,7 +49,7 @@ export async function startTimer(input: StartInput): Promise<Timer> {
       taskDetached: entry?.taskDetached ?? plan?.taskDetached ?? false,
       projectId: entry?.projectId ?? input.projectId ?? plan?.projectId ?? null,
       categoryId: entry?.categoryId ?? input.categoryId ?? plan?.categoryId ?? null,
-      businessUnit: entry ? entry.businessUnit ?? '' : await inheritedBusinessUnit(input),
+      businessUnit: entry?.businessUnit ?? plan?.businessUnit ?? await inheritedBusinessUnit(input),
       planId,
       sourceEntryId: entry?.id ?? null,
       calendarDetached: entry?.calendarDetached ?? false,
