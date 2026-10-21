@@ -148,6 +148,9 @@
 .calendar-date-header--today strong {
   color: var(--accent);
 }
+.calendar-date-header--today span {
+  color: var(--text);
+}
 .calendar-times {
   background: var(--surface-soft);
 }

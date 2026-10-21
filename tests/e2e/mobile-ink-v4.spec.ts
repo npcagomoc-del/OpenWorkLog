@@ -166,6 +166,8 @@ test('real pen input saves handwriting across offline production reload', async 
   await expect(page.getByTestId('ink-stroke-count')).toHaveText('1 stroke');
   await page.reload();
   await expect(page.getByTestId('ink-stroke-count')).toHaveText('1 stroke');
+  await canvas.scrollIntoViewIfNeeded();
+  await expect(canvas).toBeInViewport();
   await fitDocument(page);
   await page.screenshot({ path: info.outputPath('phone-375-offline-pen.png'), animations: 'disabled' });
   await cdp.detach();
