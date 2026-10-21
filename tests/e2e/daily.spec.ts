@@ -17,7 +17,7 @@ test('full day shows one spanning 32-minute activity and excludes lunch', async 
   const activity = page.locator('.daily-activity-block').filter({ hasText: 'Inspect camera feed' });
   await expect(activity).toHaveCount(1);
   await expect(activity).toContainText('13:10–13:42');
-  await expect(activity).toContainText('32m saved');
+  await expect(activity).toContainText('32m active · saved');
   await expect(activity).toHaveCSS('grid-row', '27 / 29');
   await page.getByRole('button', { name: 'Add entry', exact: true }).click();
   await editor.getByLabel('Task / activity', { exact: true }).fill('Lunch');
@@ -31,7 +31,7 @@ test('full day shows one spanning 32-minute activity and excludes lunch', async 
   await page.reload();
   await page.getByRole('button', { name: 'Full day · 24h', exact: true }).click();
   await expect(activity).toHaveCount(1);
-  await expect(activity).toContainText('32m saved');
+  await expect(activity).toContainText('32m active · saved');
 });
 
 test('timer pause survives reload and saving work leaves the linked task open', async ({ page }) => {

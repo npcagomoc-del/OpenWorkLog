@@ -77,7 +77,7 @@ for (const size of sizes) {
         }
         await capture(`executive-${section}-${theme}`);
       }
-      await page.locator('.executive-chart-data summary').click();
+      await page.getByText('View time figures', { exact: true }).click();
       const figures = page.getByRole('region', { name: 'Planned and logged time figures', exact: true });
       await figures.scrollIntoViewIfNeeded();
       if (size.width < 500) await figures.evaluate(element => { element.scrollLeft = element.scrollWidth; });
