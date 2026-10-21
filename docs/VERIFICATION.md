@@ -1,8 +1,38 @@
 # Verification record
 
+## Current v3 candidate — measured results, release verification pending
+
+This section records the compact tracker/Planner revision measured on 21 October 2026. It describes the audited candidate, not a claim that the final rebuilt release has been published or approved. Final publication status, URL and final evidence counts belong in the sibling `OpenWorkLog-QA-v3/finalrelease-summary.md` release summary when produced. The v2 record below is historical and must not be used as current v3 evidence.
+
+Git candidate commit: `46e97a689d98049d04f50ea25d66d1495777031e`. This is a Git SHA, distinct from the per-file/source SHA-256 hashes recorded in the v3 manifests. The measured production HTML SHA-256 is `3d78ab3aeb6a10b824db890b9f2d7a1254481e39c6d6981af0c1d5618e0b8d45`; main bundle is `index-C7cFBgr2.js`. Source and production HTML remained stable through these audits. The upcoming release also includes a two-line CSV help-copy correction and a timer snapshot regression repair: a selected plan's named or blank Business Unit must remain captured when its linked task later changes. Final rebuild, timer snapshot regression checks, fresh full browser recapture and final visual review remain release checks; the candidate measurements below retain their original provenance.
+
+| Measured candidate check | Result and scope |
+| --- | --- |
+| Strict TypeScript and production build | Passed |
+| Unit/data tests | 110 passed across 24 files |
+| Lint | Exit 0; 6 warnings and 8 informational suggestions |
+| Full production browser acceptance | 44 passed after six stale assertion repairs; fresh full 44-scenario recapture after the CSV help-copy change is pending |
+| Accessibility and geometry | 126 axe states: zero reported violations, small targets, document overflow or page errors; five zoom checks |
+| Resolved palette contrast | Minimum measured text ratio 4.5014:1 and ring ratio 3.00798:1 |
+| React Doctor | Score 67; zero errors, 31 warnings across 128 TypeScript/TSX files |
+| Final capture inventory and visual approval | Pending; use the final v3 manifests and independent review rather than inferring a count here |
+
+Lighthouse used 30 local lab runs. Desktop performance was 100 on all five routes. Mobile route results were Dashboard 92, My Tasks 100, Calendar 99, Daily Log 99 and Executive 100. Accessibility, Best Practices and SEO were 100 on all 30 runs. These measurements describe the audited local production candidate and emulated device conditions; they are not physical-device guarantees or final hosting measurements.
+
+### v3 evidence and release boundaries
+
+Locate the sibling output folder `../OpenWorkLog-QA-v3/` from the repository root. It contains `capture-manifest-final.json` and `capture-manifest-preliminary.json`, `acceptance-results-final.json` and `acceptance-results-preliminary.json`, the `captures/` and `performance/` directories, independent data results/review, performance review, code/context/goal/security reviews and the review ledger. Check each artifact's recorded hash, time and candidate scope. A filename containing “final” identifies that audit pass; it alone does not prove the subsequently rebuilt or published release matches it. The release summary will link the final accepted inventory and publication evidence. Private browser workspace records and JSON backups are not deployment or QA deliverables.
+
+Cloudflare's authenticated in-app browser static-assets upload was prepared with 47 app files, the name `openworklog`, account hostname suffix `npcagomoc-56b.workers.dev`, and SPA fallback selected. Deployment had not been executed when this candidate record was written; this is preparation evidence, not a live HTTPS availability claim. Root owns the authorized deployment after the final gate. The private GitHub source push is also pending. Consult the v3 release summary for later completion rather than treating these preparation details as publication proof.
+
+The app remains browser-local IndexedDB storage. HTTPS hosting publishes the app shell and does not transfer the old origin's records, add login, or provide cloud synchronization. Moving an existing workspace requires a private JSON backup from the old origin and explicit restore at the chosen production origin. Physical phone/tablet acceptance and other browser engines remain unverified unless the release summary records direct tests.
+
+## Historical v2 connected-work release — retained evidence, superseded for current v3
+
+Everything below this heading describes the earlier v2 build and its own fingerprints, counts and approvals. It is retained unchanged in substance as release history; none of its measurements or approval statements establishes v3 release readiness.
 Verified locally on 2026-10-21 using the production build and installed Google Chrome. Checks used isolated test workspaces. Private browser records and backups are excluded from source and QA deliverables.
 
-## Connected-work update
+### Connected-work update
 
 | Check | Result |
 | --- | --- |
@@ -18,7 +48,7 @@ Verified locally on 2026-10-21 using the production build and installed Google C
 
 Production HTML SHA-256: `0061a5c712614fd5378a77a82c9a1ad66ca49627a63553d484c4e40de215820a`. Main bundle: `index-DO0qN-Ao.js`. The capture manifest records all 118 source file hashes, production asset hashes, image signatures, dimensions, capture times and hashes. Its source aggregate is `3938deca8f7846a02ef1727774eab7f73314525a2672f53340977b6f61c31468`; manifest SHA-256 is `836895feb07715e2e9a7e5d6ecec94b35d48d67da5126fbc0f3b4412fbbd0513`.
 
-## Workflows exercised
+### Workflows exercised
 
 - A new non-break Daily activity or Calendar plan creates one canonical My Tasks record. Explicitly linked work reuses its task. Planned Daily work appears in Calendar. Lunch creates no tracker task.
 - Older workspaces and version-1 backups receive one atomic link upgrade. Intentional task/plan deletions remain detached during edits, rescheduling, timer use, reload and current-backup restore. Schedule dates do not become task deadlines.
@@ -31,7 +61,7 @@ Production HTML SHA-256: `0061a5c712614fd5378a77a82c9a1ad66ca49627a63553d484c4e4
 
 Root also manually used the actual in-app browser on a separate production origin: saved one activity, confirmed My Tasks and Calendar, physically dragged it to In Progress, reloaded, selected its planned timer source and checked Executive exact figures of 1h planned/30m logged. Screenshots contain only deliberate sample records.
 
-## Responsive coverage and repaired findings
+### Responsive coverage and repaired findings
 
 Viewport sizes: 375×812, 430×932, 800×1280, 1280×800 and 1440×1000. Every route and the component showcase were captured in Light and Super dark, plus the task Table/Kanban, late Calendar slots, full-day log, planned/running timer, Executive sections/exact figures, mobile drawers, note reader, report preview, backup settings, Dark/Large text, dialogs and motion states. Tables/charts use their intended internal horizontal viewport. Each matrix state asserts no document-width overflow.
 
@@ -39,7 +69,7 @@ A pre-update real-browser regression reproduced the reported missing Daily-to-Ta
 
 One intermediate browser candidate passed 31/32. Its sole failure was a synthetic zero-duration Space press followed immediately by an arrow before the drag library attached its keyboard listener. The final fixture uses a human keypress and checks drag readiness; all exact midnight, cancellation, focus and persistence assertions remain. Intermediate reports are retained as history and are not final approvals.
 
-## Performance and limits
+### Performance and limits
 
 Lighthouse performance scores are three-run medians per page/device, 30 runs total. The isolated populated workspace contained two hours of planned work and 32 minutes logged through the real UI.
 
@@ -59,13 +89,13 @@ All device checks use Chrome with emulated viewport/touch settings. Physical Tab
 
 The database is local IndexedDB through Dexie. There is no configured cloud database, account service or automatic multi-device synchronization. Offline operation requires a successful initial production load and retained browser storage. Keep JSON backups outside the browser before clearing site data, moving origins or transferring devices. GitHub source upload does not deploy a public website; hosted CI and external hosting are not claimed as verified.
 
-## Evidence locations
+### Evidence locations
 
 The sibling `OpenWorkLog-QA-v2` output contains the acceptance JSON, capture manifest and `responsive-final/`, independent data review, root manual proof, build checks, final performance audit and independent visual reports. Supplementary evidence is indexed separately so the original 280-image manifest remains reproducible. Temporary Playwright `test-results/` is not the durable release record.
 
 The initial release history remains in sibling `OpenWorkLog-QA`; its earlier 53-test/19-browser/132-capture results describe the original build, not this update.
 
-## Final visual approval
+### Final visual approval
 
 Independent Pass A and Pass B both PASS with no blockers on the HTML fingerprint above. Each covered all 314 final frames: original 280, corrected 32-frame detail supplement and two settled Escape-cancel captures. Pass B opened every frame individually; Pass A covered the complete numbered contact-sheet inventory with additional full-resolution checks. Both independently verified source and image hashes.
 
