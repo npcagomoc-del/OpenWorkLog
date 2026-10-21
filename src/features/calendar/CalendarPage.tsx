@@ -1,5 +1,6 @@
-import { ChevronLeft, ChevronRight, Clock3, Plus } from 'lucide-react';
+import { ChevronLeft, ChevronRight, Clock3, Maximize2, Plus } from 'lucide-react';
 import { useState } from 'react';
+import { useShell } from '../../app/ShellContext';
 import {
   Badge,
   Button,
@@ -14,6 +15,8 @@ import { useWorkspace } from '../../data/useWorkspace';
 import type { Plan } from '../../domain/models';
 import { todayKey } from '../../domain/time';
 import { CalendarGrid } from './CalendarGrid';
+import { CalendarFocusToolbar } from './CalendarFocusToolbar';
+import { categoryForPlan, categoryStyle } from './calendarCategory';
 import type { CalendarView } from './calendarLogic';
 import { calendarDates, navigateDate, parseDate, plansForDate, timeInput } from './calendarLogic';
 import { PlanDetails } from './PlanDetails';
@@ -26,9 +29,13 @@ const views = [
   { value: 'month', label: 'Month' },
 ] as const;
 export default function CalendarPage() {
-  const { plans, settings } = useWorkspace();
+  const { plans, tasks, categories, settings } = useWorkspace();
+  const { focusMode, setFocusMode } = useShell();
   const [date, setDate] = useState(() => todayKey(new Date(), settings.timezone));
-  const [view, setView] = useState<CalendarView>('week');
+  const [view, setView] = useState<CalendarView>(() =>
+    window.matchMedia('(max-width: 700px)').matches ? 'day' : 'week',
+  );
+  const [focusView, setFocusView] = useState<CalendarView>('day');
   const [workHours, setWorkHours] = useState(true);
   const [editor, setEditor] = useState<{
     readonly plan: Plan | null;
@@ -36,11 +43,12 @@ export default function CalendarPage() {
     readonly minute: number;
   } | null>(null);
   const [detail, setDetail] = useState<Plan | null>(null);
-  const dates = calendarDates(date, view, settings.weekStartsOn);
+  const displayedView = focusMode ? focusView : view;
+  const dates = calendarDates(date, displayedView, settings.weekStartsOn);
   const daily = plansForDate(plans, date);
   const title = parseDate(date).toLocaleDateString(undefined, { month: 'long', year: 'numeric' });
   const hiddenPlans =
-    view === 'month' || !workHours
+    displayedView === 'month' || !workHours || focusMode
       ? 0
       : plans.filter(
           (plan) =>
@@ -51,19 +59,30 @@ export default function CalendarPage() {
     setEditor({ plan: null, date: day, minute });
   }
   return (
-    <div className="page-stack calendar-page">
-      <PageHeader
+    <div className={`page-stack calendar-page ${focusMode ? 'calendar-page--focus' : ''} ${focusMode && displayedView === 'day' ? 'calendar-page--focus-day' : ''} ${focusMode && displayedView === 'month' ? 'calendar-page--focus-month' : ''}`}>
+      {focusMode ? (
+        <CalendarFocusToolbar
+          date={date} view={focusView} weekStartsOn={settings.weekStartsOn}
+          onDate={setDate} onView={setFocusView}
+          onCreate={() => create(date, settings.workStart)}
+          onExit={() => setFocusMode(false)}
+          onNavigate={(direction) => setDate(navigateDate(date, focusView, direction))}
+          onToday={() => setDate(todayKey(new Date(), settings.timezone))}
+        />
+      ) : <PageHeader
         eyebrow="MAKE ROOM FOR YOUR WORK"
         title="Calendar"
         description="Plan your time. Keep the actual work connected."
         actions={
-          <Button variant="primary" onClick={() => create(date, settings.workStart)}>
-            <Plus size={18} />
-            New plan
-          </Button>
+          <div className="cluster">
+            <Button onClick={() => setFocusMode(true)}><Maximize2 size={18} />Focus calendar</Button>
+            <Button variant="primary" onClick={() => create(date, settings.workStart)}>
+              <Plus size={18} />New plan
+            </Button>
+          </div>
         }
-      />
-      <Card className="card-pad stack">
+      />}
+      {!focusMode && <Card className="card-pad stack">
         <div className="split">
           <div className="cluster">
             <h2 className="calendar-month-title">{title}</h2>
@@ -111,8 +130,8 @@ export default function CalendarPage() {
             <Badge>{settings.timezone}</Badge>
           </div>
         </div>
-      </Card>
-      <div className="split small muted">
+      </Card>}
+      {!focusMode && <div className="split small muted">
         <span className="cluster">
           <Clock3 size={15} />
           Half-hour planning · lunch {timeInput(settings.lunchStart)}–{timeInput(settings.lunchEnd)}
@@ -126,21 +145,24 @@ export default function CalendarPage() {
             {hiddenPlans} outside work hours · Show full day
           </button>
         )}
-      </div>
+      </div>}
       <Card className="calendar-canvas">
         <CalendarGrid
           dates={dates}
           plans={plans}
+          tasks={tasks}
+          categories={categories}
           settings={settings}
           selected={date}
-          workHours={workHours}
-          month={view === 'month'}
+          focusMode={focusMode}
+          workHours={focusMode ? false : workHours}
+          month={displayedView === 'month'}
           onSelect={setDate}
           onPlan={setDetail}
           onCreate={create}
         />
       </Card>
-      <section aria-labelledby="calendar-agenda-title" className="stack">
+      {!focusMode && <section aria-labelledby="calendar-agenda-title" className="stack">
         <div className="split">
           <h2 id="calendar-agenda-title" className="calendar-agenda-title">
             {parseDate(date).toLocaleDateString(undefined, {
@@ -156,10 +178,13 @@ export default function CalendarPage() {
         <Card>
           {daily.length ? (
             <div className="calendar-agenda">
-              {daily.map((plan) => (
+              {daily.map((plan) => {
+                const category = categoryForPlan(plan, tasks, categories);
+                return (
                 <button
                   type="button"
-                  className="calendar-agenda-item"
+                  className={`calendar-agenda-item ${category ? 'calendar-category-event' : ''}`}
+                  style={categoryStyle(category)}
                   key={plan.id}
                   onClick={() => setDetail(plan)}
                 >
@@ -170,13 +195,15 @@ export default function CalendarPage() {
                   </span>
                   <span>
                     <strong>{plan.title}</strong>
+                    {category && <span className="calendar-agenda-category">{category.name}</span>}
                     {plan.notes && (
                       <span className="small muted calendar-agenda-note">{plan.notes}</span>
                     )}
                   </span>
                   <ChevronRight size={18} />
                 </button>
-              ))}
+                );
+              })}
             </div>
           ) : (
             <EmptyState
@@ -186,7 +213,7 @@ export default function CalendarPage() {
             />
           )}
         </Card>
-      </section>
+      </section>}
       {editor && <PlanEditor plan={editor.plan} initial={editor} onClose={() => setEditor(null)} />}
       {detail && (
         <PlanDetails

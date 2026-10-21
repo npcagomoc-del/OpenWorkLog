@@ -1,6 +1,7 @@
 import { useDraggable, useDroppable } from '@dnd-kit/core';
 import { GripVertical } from 'lucide-react';
-import type { Plan } from '../../domain/models';
+import type { Category, Plan } from '../../domain/models';
+import { categoryStyle } from './calendarCategory';
 import { type CalendarSlot, calendarPlanId, calendarSlotId } from './calendarDrag';
 import { timeInput } from './calendarLogic';
 import type { PlanInterval } from './calendarResize';
@@ -47,6 +48,7 @@ export function CalendarDropSlot({
 
 export function CalendarPlanBlock({
   plan,
+  category,
   lane,
   laneCount,
   start,
@@ -56,6 +58,7 @@ export function CalendarPlanBlock({
   onResizePreview,
 }: {
   readonly plan: Plan;
+  readonly category: Category | undefined;
   readonly lane: number;
   readonly laneCount: number;
   readonly start: number;
@@ -73,9 +76,10 @@ export function CalendarPlanBlock({
   return (
     <div
       ref={setNodeRef}
-      className={`calendar-block ${isDragging ? 'calendar-block--dragging' : ''} ${resize.active ? 'calendar-block--resizing' : ''}`}
+      className={`calendar-block ${category ? 'calendar-category-event' : ''} ${isDragging ? 'calendar-block--dragging' : ''} ${resize.active ? 'calendar-block--resizing' : ''}`}
       data-calendar-plan={plan.id}
       style={{
+        ...categoryStyle(category),
         top: `${((Math.max(interval.startMinute, start) - start) / 30) * 3.5}rem`,
         height: `${((Math.min(interval.endMinute, end) - Math.max(interval.startMinute, start)) / 30) * 3.5}rem`,
         left: `calc(${(lane / laneCount) * 100}% + 3px)`,
@@ -86,12 +90,14 @@ export function CalendarPlanBlock({
         type="button"
         className="calendar-block-open"
         onClick={() => onPlan(plan)}
-        title={`${plan.title} · ${timeInput(plan.startMinute)}–${timeInput(plan.endMinute)}`}
+        title={`${plan.title} · ${timeInput(plan.startMinute)}–${timeInput(plan.endMinute)}${category ? ` · ${category.name}` : ''}`}
+        aria-label={`${plan.title}, ${timeInput(interval.startMinute)} to ${timeInput(interval.endMinute)}${category ? `, ${category.name}` : ''}`}
       >
         <strong>{plan.title}</strong>
         <span>
           {timeInput(interval.startMinute)}–{timeInput(interval.endMinute)}
         </span>
+        {category && interval.endMinute - interval.startMinute >= 60 && <small className="calendar-block-category">{category.name}</small>}
       </button>
       {(['start', 'end'] as const).map((edge) => (
         <button

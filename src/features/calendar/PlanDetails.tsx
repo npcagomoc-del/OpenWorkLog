@@ -14,6 +14,7 @@ import { actions } from '../../data/actions';
 import { startTimer } from '../../data/timers';
 import { useWorkspace } from '../../data/useWorkspace';
 import type { Plan } from '../../domain/models';
+import { categoryForPlan } from './calendarCategory';
 import { parseDate, timeInput } from './calendarLogic';
 
 export function PlanDetails({
@@ -28,7 +29,7 @@ export function PlanDetails({
   const { tasks, projects, categories, dailyEntries, timers } = useWorkspace();
   const task = tasks.find((item) => item.id === plan.taskId);
   const project = projects.find((item) => item.id === plan.projectId);
-  const category = categories.find((item) => item.id === plan.categoryId);
+  const category = categoryForPlan(plan, tasks, categories);
   const [deleting, setDeleting] = useState(false);
   const [busy, setBusy] = useState(false);
   const [error, setError] = useState('');

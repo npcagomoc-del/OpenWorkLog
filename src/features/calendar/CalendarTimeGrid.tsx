@@ -1,9 +1,10 @@
 import { DndContext, DragOverlay } from '@dnd-kit/core';
-import { useState } from 'react';
+import { useEffect, useRef, useState } from 'react';
 import { createPortal } from 'react-dom';
-import type { Plan, Settings } from '../../domain/models';
-import { todayKey } from '../../domain/time';
+import type { Category, Plan, Settings, Task } from '../../domain/models';
+import { localMinute, todayKey } from '../../domain/time';
 import { CalendarDropSlot, CalendarPlanBlock } from './CalendarDragItems';
+import { categoryForPlan } from './calendarCategory';
 import { calendarPlanId, useCalendarDrag } from './calendarDrag';
 import type { PlanInterval } from './calendarResize';
 import './calendarDrag.css';
@@ -12,7 +13,10 @@ import { parseDate, planLanes, plansForDate, timeInput } from './calendarLogic';
 export function CalendarTimeGrid({
   dates,
   plans,
+  tasks,
+  categories,
   settings,
+  focusMode,
   workHours,
   onSelect,
   onPlan,
@@ -20,13 +24,28 @@ export function CalendarTimeGrid({
 }: {
   readonly dates: readonly string[];
   readonly plans: readonly Plan[];
+  readonly tasks: readonly Task[];
+  readonly categories: readonly Category[];
   readonly settings: Settings;
+  readonly focusMode: boolean;
   readonly workHours: boolean;
   readonly onSelect: (date: string) => void;
   readonly onPlan: (plan: Plan) => void;
   readonly onCreate: (date: string, minute: number) => void;
 }) {
   const [previews, setPreviews] = useState<ReadonlyMap<string, PlanInterval>>(new Map());
+  const scrollRef = useRef<HTMLElement>(null);
+  useEffect(() => {
+    if (focusMode && scrollRef.current) {
+      const slotHeight = scrollRef.current.querySelector('.calendar-times > div')?.getBoundingClientRect().height ?? 56;
+      scrollRef.current.scrollTop = Math.max(0, (Math.floor(settings.workStart / 30) - 1) * slotHeight);
+    }
+  }, [focusMode, settings.workStart]);
+  const [now, setNow] = useState(() => new Date());
+  useEffect(() => {
+    const timer = window.setInterval(() => setNow(new Date()), 60_000);
+    return () => window.clearInterval(timer);
+  }, []);
   function previewResize(id: string, interval: PlanInterval | null) {
     setPreviews((current) => {
       const next = new Map(current);
@@ -35,7 +54,8 @@ export function CalendarTimeGrid({
       return next;
     });
   }
-  const today = todayKey(new Date(), settings.timezone);
+  const today = todayKey(now, settings.timezone);
+  const currentMinute = localMinute(now, settings.timezone);
   const start = workHours ? Math.floor(settings.workStart / 30) * 30 : 0;
   const end = workHours ? Math.ceil(settings.workEnd / 30) * 30 : 1440;
   const slots = Array.from({ length: (end - start) / 30 }, (_, index) => start + index * 30);
@@ -77,6 +97,7 @@ export function CalendarTimeGrid({
           : 'Move with the grip. On touch, tap the grip to show resize edges. Drag an edge, or use Up/Down then Enter. Escape cancels.'}
       </p>
       <section
+        ref={scrollRef}
         className="calendar-time-scroll"
         aria-label="Calendar time grid"
         aria-busy={drag.saving}
@@ -84,8 +105,8 @@ export function CalendarTimeGrid({
         <div
           className={`calendar-time-grid ${dates.length > 1 ? 'calendar-time-grid--week' : ''}`}
           style={{
-            gridTemplateColumns: `4rem ${days.map((day) => `minmax(calc(var(--calendar-lane-min) * ${day.laneCount}), 1fr)`).join(' ')}`,
-            minWidth: `calc(4rem + var(--calendar-lane-min) * ${totalLanes})`,
+            gridTemplateColumns: `var(--calendar-gutter, 4rem) ${days.map((day) => `minmax(calc(var(--calendar-lane-min) * ${day.laneCount}), 1fr)`).join(' ')}`,
+            minWidth: `calc(var(--calendar-gutter, 4rem) + var(--calendar-lane-min) * ${totalLanes})`,
           }}
         >
           <div className="calendar-time-corner">24h</div>
@@ -129,6 +150,7 @@ export function CalendarTimeGrid({
                   <CalendarPlanBlock
                     key={plan.id}
                     plan={plan}
+                    category={categoryForPlan(plan, tasks, categories)}
                     lane={lane}
                     laneCount={laneCount}
                     start={start}
@@ -138,6 +160,13 @@ export function CalendarTimeGrid({
                     onResizePreview={previewResize}
                   />
                 ))}
+                {date === today && currentMinute >= start && currentMinute < end && (
+                  <div
+                    className="calendar-now-line"
+                    aria-hidden="true"
+                    style={{ top: `${((currentMinute - start) / 30) * 3.5}rem` }}
+                  />
+                )}
               </div>
             );
           })}

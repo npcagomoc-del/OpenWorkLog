@@ -1,4 +1,4 @@
-import { useState } from 'react';
+import { useEffect, useState } from 'react';
 import { Button, Field, Modal, Notice, useToast } from '../../components/ui';
 import { actions } from '../../data/actions';
 import { useWorkspace } from '../../data/useWorkspace';
@@ -15,8 +15,9 @@ export function PlanEditor({
   readonly onClose: () => void;
 }) {
   const { tasks, projects, categories, settings } = useWorkspace();
+  const linkedTask = plan ? tasks.find((task) => task.id === plan.taskId) : undefined;
   const [draft, setDraft] = useState<PlanCreateInput>(
-    plan ?? {
+    plan ? { ...plan, categoryId: linkedTask ? linkedTask.categoryId : plan.categoryId } : {
       title: '',
       date: initial.date,
       startMinute: initial.minute,
@@ -27,6 +28,14 @@ export function PlanEditor({
       notes: '',
     },
   );
+  const [categoryDirty, setCategoryDirty] = useState(false);
+  useEffect(() => {
+    if (categoryDirty || !draft.taskId) return;
+    const currentTask = tasks.find((task) => task.id === draft.taskId);
+    if (currentTask && currentTask.categoryId !== draft.categoryId) {
+      setDraft((current) => ({ ...current, categoryId: currentTask.categoryId }));
+    }
+  }, [categoryDirty, draft.categoryId, draft.taskId, tasks]);
   const [busy, setBusy] = useState(false);
   const [error, setError] = useState('');
   const { toast } = useToast();
@@ -34,8 +43,17 @@ export function PlanEditor({
     setBusy(true);
     setError('');
     try {
-      if (plan) await actions.updatePlan(plan.id, draft);
-      else await actions.createPlan(draft);
+      if (plan) {
+        const { categoryId: _categoryId, ...withoutCategory } = draft;
+        await actions.updatePlan(plan.id, categoryDirty ? draft : withoutCategory);
+      } else {
+        const currentTask = tasks.find((task) => task.id === draft.taskId);
+        await actions.createPlan(
+          categoryDirty || !currentTask
+            ? draft
+            : { ...draft, categoryId: currentTask.categoryId },
+        );
+      }
       toast(plan ? 'Plan updated' : 'Added to your calendar');
       onClose();
     } catch (cause) {
@@ -46,6 +64,7 @@ export function PlanEditor({
   }
   function linkTask(id: string) {
     const task = tasks.find((item) => item.id === id);
+    setCategoryDirty(false);
     setDraft({
       ...draft,
       taskId: id || null,
@@ -186,11 +205,20 @@ export function PlanEditor({
                 ))}
             </select>
           </Field>
-          <Field label="Category" htmlFor="plan-category">
+          <Field
+            label="Category"
+            htmlFor="plan-category"
+            hint={draft.taskId
+              ? 'Changing this category also updates the linked task.'
+              : 'Choose a category for this plan.'}
+          >
             <select
               id="plan-category"
               value={draft.categoryId ?? ''}
-              onChange={(event) => setDraft({ ...draft, categoryId: event.target.value || null })}
+              onChange={(event) => {
+                setCategoryDirty(true);
+                setDraft({ ...draft, categoryId: event.target.value || null });
+              }}
             >
               <option value="">Uncategorized</option>
               {categories
