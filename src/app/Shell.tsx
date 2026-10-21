@@ -7,6 +7,7 @@ import {
   Minimize2,
   Monitor,
   Moon,
+  MoonStar,
   MoreHorizontal,
   PanelLeftClose,
   Search,
@@ -20,6 +21,9 @@ import { navigation } from './navigation';
 import { SearchDialog } from './SearchDialog';
 import { ShellContext } from './ShellContext';
 import { TimerDock } from './TimerDock';
+const nextTheme = { system: 'light', light: 'dark', dark: 'black', black: 'system' } as const;
+const themeIcons = { system: Monitor, light: Sun, dark: Moon, black: MoonStar } as const;
+const themeLabels = { system: 'system', light: 'light', dark: 'dark', black: 'super dark' } as const;
 export function Shell() {
   const { settings, tasks } = useWorkspace();
   const { toast } = useToast();
@@ -65,8 +69,7 @@ export function Shell() {
   async function toggleTheme() {
     try {
       await actions.updateSettings({
-        theme:
-          settings.theme === 'system' ? 'light' : settings.theme === 'light' ? 'dark' : 'system',
+        theme: nextTheme[settings.theme],
       });
     } catch (error) {
       toast(error instanceof Error ? error.message : 'Could not save appearance.', 'error');
@@ -97,7 +100,7 @@ export function Shell() {
       );
     });
   }
-  const ThemeIcon = settings.theme === 'light' ? Sun : settings.theme === 'dark' ? Moon : Monitor;
+  const ThemeIcon = themeIcons[settings.theme];
   return (
     <ShellContext.Provider value={{ focusMode, setFocusMode }}>
       <div
@@ -174,7 +177,7 @@ export function Shell() {
                 {focusMode ? <Minimize2 size={19} /> : <Maximize2 size={19} />}
               </IconButton>
               <IconButton
-                label={`Toggle theme (currently ${settings.theme})`}
+                label={`Toggle theme (currently ${themeLabels[settings.theme]})`}
                 onClick={() => void toggleTheme()}
               >
                 <ThemeIcon size={20} />

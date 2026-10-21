@@ -1,4 +1,4 @@
-import { Monitor, Moon, Sun } from 'lucide-react';
+import { Monitor, Moon, MoonStar, Sun } from 'lucide-react';
 import { Card, Field, SegmentedControl } from '../../components/ui';
 import type { Settings } from '../../domain/models';
 
@@ -21,6 +21,7 @@ export function AppearanceSettings({ settings, save }: Props) {
           options={[
             { value: 'light', label: 'Light', icon: <Sun size={18} /> },
             { value: 'dark', label: 'Dark', icon: <Moon size={18} /> },
+            { value: 'black', label: 'Super dark', icon: <MoonStar size={18} /> },
             { value: 'system', label: 'System', icon: <Monitor size={18} /> },
           ]}
         />

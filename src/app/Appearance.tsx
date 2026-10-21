@@ -7,6 +7,8 @@ export function Appearance({ settings }: { readonly settings: Settings }) {
       document.documentElement.dataset['theme'] =
         settings.theme === 'system' ? (media.matches ? 'dark' : 'light') : settings.theme;
       document.documentElement.dataset['textSize'] = settings.textSize;
+      const background = getComputedStyle(document.documentElement).getPropertyValue('--bg').trim();
+      document.querySelector('meta[name="theme-color"]')?.setAttribute('content', background);
     };
     update();
     media.addEventListener('change', update);
