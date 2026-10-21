@@ -54,6 +54,8 @@ Records are separated by browser profile and URL origin, including hostname and 
 4. Open the HTTPS address on each device and let the initial load finish.
 5. Use the browser's installation command, then test offline use as described below.
 
+For Cloudflare hosting, follow the [deployment guide](CLOUDFLARE_DEPLOYMENT.md). It covers a clean production package, supported dashboard upload choices, SPA routing, headers and verification. Publishing the app makes its code available at an HTTPS URL; work records remain separate in each browser. Export a private JSON backup from the old URL and restore it at the final production URL to move your workspace.
+
 This build expects to run at the root of a domain. Hosting below a path such as `/OpenWorkLog/` needs a matching Vite base, router configuration and PWA paths before deployment. GitHub stores the source; pushing the repository does not automatically deploy the app.
 
 `http://192.168.x.x:port` on a local network may display the page but generally does not provide the secure context needed for service workers and PWA installation. The localhost exception applies to the device running the server, not a phone connecting to that computer's LAN address. Use HTTPS for phone/tablet installation. A preview server bound to `127.0.0.1` is also accessible only on that computer.
@@ -81,6 +83,7 @@ In **Settings**:
 - Set an IANA time zone, such as `Asia/Manila`, and save the schedule.
 - Set your local profile name and the labels for Task, Operational and Project work.
 - Add categories before importing tasks that use those names.
+- Configure optional Business Units and status colors. Leave Business Unit unassigned when it does not apply.
 
 Work saved in Daily log or Calendar is linked to the task tracker automatically. Choose existing tasks when recording related work to avoid creating separate tracker items for the same activity. On an older workspace, the first upgrade also connects existing non-break activities that lack task links. New backups preserve the upgrade marker and intentional deletions.
 

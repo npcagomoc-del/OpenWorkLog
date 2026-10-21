@@ -6,7 +6,7 @@ OpenWorkLog stores records in this browser on this device using IndexedDB. It do
 
 Read the [setup guide](docs/SETUP.md) for installation, hosting and offline setup, and the [user guide](docs/USER_GUIDE.md) for tasks, daily logs, timers, notes, CSV reports and backups.
 
-Non-break work entered in Daily log or Calendar links to the task tracker. Choose an existing task to reuse it, or let the app create a task for new work. Planned daily work also appears on the calendar. Kanban status changes and calendar rescheduling support mouse, touch and keyboard grips, with status selectors and edit forms available too. Appearance includes Light, Dark, Super dark and System.
+Non-break work entered in Daily log or Calendar links to the task tracker. Choose an existing task to reuse it, or let the app create a task for new work. Planned daily work also appears on the calendar. The compact task tracker has List, Table and Kanban views, five statuses, optional Business Unit, configurable board groups and status colors. Calendar plans support moving and duration resizing, with edit forms available too. Appearance includes Light, Dark, Super dark and System.
 
 ## Run locally
 
@@ -32,13 +32,15 @@ The preview server prints its address. Use the same browser, profile, hostname, 
 
 The production build includes a service worker and web app manifest. Load the production URL online once and allow the app to finish loading before going offline. When supported, use the browser's Install app or Add to home screen command. Development mode is for building the app; verify offline behavior against the production build.
 
-Serve the app over HTTPS for a hosted installation, or use localhost for local testing. A static host must route app URLs back to `index.html`. This repository does not publish a public site automatically. Installation availability varies by browser; responsive browser tests do not prove operation on a physical tablet or phone.
+Serve the app over HTTPS for a hosted installation, or use localhost for local testing. A static host must route app URLs back to `index.html`. See the [Cloudflare deployment guide](docs/CLOUDFLARE_DEPLOYMENT.md) for release packaging, SPA routing and the move to an HTTPS origin. Source pushes do not publish a site automatically. Installation availability varies by browser; responsive browser tests do not prove operation on a physical tablet or phone.
 
 ## Protect your records
 
 In Settings, export a JSON backup and save it somewhere you control. Backups contain tasks, projects, categories, notes, planner entries, daily entries, timer records, and settings. They can contain private work details; treat them as private files.
 
 To restore, choose the JSON file, review its preview, then explicitly confirm replacement. Restore replaces the current device workspace. An invalid file is rejected before replacement. Keep a recent backup before moving between devices or clearing browser data. CSV exports are useful reports, but are not a full workspace backup.
+
+Publishing the app over HTTPS creates another browser storage origin. Export a private JSON backup from the old URL and restore it at the new URL to move records. Upload only the app build; never include that backup in the hosting package.
 
 Core data stays on this device. There is no configured cloud synchronization, multi-user access, server database, or automatic cross-device backup. Browser storage can be removed by browser settings, profile deletion, or storage eviction.
 

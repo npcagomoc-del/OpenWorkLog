@@ -1,7 +1,7 @@
 # OpenWorkLog Design System
 
 ## 1. Atmosphere & Identity
-A spacious personal operations workspace: Todoist task-first navigation, Fluent legibility and restrained Apple surface depth. The supplied v3 mockups are workflow references; the user explicitly approved Apple refinement. Preserve blue navigation and Open / In Progress / Closed semantic colors, readable tables and a persistent workspace. Use system typography, no stock imagery. Signature: an original blue open-ring / folded-worklog mark, quiet blue selection wells, white raised controls against a warm-cool neutral canvas. Developed by NPC appears in navigation/footer. Primary persona is an operations professional moving between desktop and tablet; secondary persona captures work from a tall phone. Both need understandable persistent state, large targets and honest offline storage wording.
+A compact personal operations workspace: task-first navigation, Fluent legibility and restrained Apple surface depth. The supplied v3 mockups are workflow references; the user explicitly approved Apple refinement. Preserve blue navigation, readable tables and a persistent workspace. Five task, project and daily-work statuses are Open, In Progress, Closed, On Hold and Cancelled. Use system typography, no stock imagery. Signature: an original blue open-ring / folded-worklog mark, quiet blue selection wells, white raised controls against a warm-cool neutral canvas. Developed by NPC appears in navigation/footer. Primary persona is an operations professional scanning many tasks on desktop and tablet; secondary persona captures work from a tall phone. Both need understandable persistent state, large targets and honest offline storage wording. Current-app screenshots identify defects to repair; they are not a pixel-clone target.
 
 References consulted: supplied v3 dashboard, frontend image-to-code, Apple, layout, interaction and perfection guidance. beui.dev tabs source informed keyboard selection and immediate reduced-motion behavior. This is an approved-reference implementation, not a new concept campaign.
 
@@ -9,7 +9,9 @@ Primary design references checked for the release:
 - [Microsoft Fluent design tokens](https://fluent2.microsoft.design/design-tokens/): reusable values for color, typography, spacing and elevation.
 - [Microsoft Fluent color](https://fluent2.microsoft.design/color) and [typography](https://fluent2.microsoft.design/typography): consistent readable surfaces and type hierarchy.
 - [Apple color guidance](https://developer.apple.com/design/human-interface-guidelines/color): sufficient contrast across appearances.
-- [Todoist boards](https://www.todoist.com/inspiration/kanban-board): alternative task-list and board views. OpenWorkLog uses its own three requested statuses and original interface.
+- [Todoist boards](https://www.todoist.com/inspiration/kanban-board): alternative task-list and board views. OpenWorkLog uses its own five requested statuses and original interface.
+- [Microsoft Planner task management](https://support.microsoft.com/en-us/planner/training/manage-your-tasks-in-microsoft-planner): independent filtering and grouping controls, with a move between groups changing the grouped property.
+- [Fluent layout](https://fluent2.microsoft.design/layout): proximity communicates related information; four-pixel spacing ramp and responsive target sizing.
 
 ## 2. Color
 Tokens below are implemented in src/styles/tokens.css. Light / dark:
@@ -29,7 +31,9 @@ Tokens below are implemented in src/styles/tokens.css. Light / dark:
 - --closed: #207145 / #8bdeb0; --closed-bg: #e2f3e9 / #203f30
 - --danger: #b52e3c / #ff9ba6; --danger-bg: #fff0f1 / #492a30
 - --scrim: rgba(14,22,35,.36) / rgba(0,0,0,.58)
-Status uses text plus color. Do not invent a fourth task status. Neutral badges are allowed for metadata such as Demo or Archived.
+Status uses text plus color. All five statuses must remain identifiable without color. Neutral badges are allowed for metadata such as Demo or Archived. The revision palette below supersedes the older Progress values above and in the historical verification notes.
+
+Revision palette: use a darker ochre/yellow In Progress seed #b58a16, blue Open #0969c7, green Closed #207145, muted purple On Hold #79628e and neutral rose-gray Cancelled #7c696d. These are editable status color seeds, not unconditional text colors. Derive contrast-safe foreground/background pairs per theme; preserve hue in marker/chart swatch and use readable neutral foreground when needed. No bright yellow slab in dark mode. Store the five seeds in appearance preferences with individual previews and Restore defaults. Shared controls, badges, board headers and dashboard/report charts must consume the same resolved palette. Text contrast is at least 4.5:1; meaningful graphic boundaries at least 3:1. Arbitrary user colors cannot override readability.
 
 ## 3. Typography
 System font: -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif. Mono only for timer: ui-monospace, SFMono-Regular, Consolas, monospace. --text-xs 12px metadata; --text-sm 14px; --text-base 16px; --text-lg 18px; --text-xl 22px; --text-2xl 28px; --text-3xl 36px stats. Body line-height 1.5. H1 28px/1.2 650 weight, letter-spacing -.025em. No oversized hero. Settings large text uses root 18px instead of 16px with rem scale.
@@ -44,7 +48,8 @@ Import named exports from src/components/ui (or relative equivalent). Every comp
 - IconButton: native button props + label:string, children; label supplies aria-label/title. 44px target.
 - Card: div props, children; subtle border and shadow; use className='card-pad' for standard padded panel.
 - PageHeader: title:string, description?:string, eyebrow?:string, actions?:ReactNode. One h1, wrapping actions.
-- StatusBadge: status:'Open'|'In Progress'|'Closed'. Text and colored dot.
+- StatusBadge: status:'Open'|'In Progress'|'Closed'|'On Hold'|'Cancelled'. Text and colored dot for read-only contexts. Do not duplicate it beside a visible StatusControl for the same record.
+- StatusControl: one labeled native select styled with the resolved status palette; current value is both the status indicator and editor. All five options; default/hover/focus/disabled/saving/error states. Never pair with a redundant status badge in the same task row. Restore the previous saved value after a failed change and expose the error.
 - Badge: children, tone?:'neutral'|'blue'|'green'|'yellow'|'red'. Metadata only.
 - EmptyState: title:string, description:string, icon?:ReactNode, action?:ReactNode.
 - Field: label:string, htmlFor?:string, hint?:string, error?:string, children. Pass native labeled input/select/textarea as children. All native controls styled globally; use .input/.select/.textarea if needed.
@@ -96,3 +101,37 @@ Executive visualization primitives are a status ring and grouped actual/planned 
 Calendar auto-scroll activates only in the outer 8% edge zone, avoiding unintended slot changes during ordinary drops. Keyboard scheduling commits the explicitly selected semantic date/time even when a visual drag rectangle reaches the final-row boundary; exact end at 24:00 is valid, later end times are rejected with feedback. Timer context links reuse the 44px text-link primitive.
 
 Active drag sources remain fully readable, with a dashed semantic outline instead of opacity dimming. Decorative drag previews are hidden from assistive technology and do not accept pointer input; the focused source and live announcements remain accessible. Calendar slots covered by an existing plan cannot open a second create action, while their drop targets stay available. Visible drop labels and accessible names describe the same destination.
+
+## Compact tracker and Planner revision (2026-10-21)
+
+This section is the current interaction contract and supersedes earlier three-status assumptions. It specifies design intent; implementation and browser verification are recorded separately.
+
+### Task rows and board
+
+- Desktop list row baseline is 56px, using 4px vertical and 12px horizontal padding and 8–12px gaps. Content may grow for large text or narrow screens. Keep 44px interactive hit targets; reduce decoration and redundant rows rather than shrinking targets. Title is the dominant text and opens the editor; status is one StatusControl; secondary actions live in a labeled overflow menu. Remove permanent Rename/Delete buttons and duplicate status badge/select pairs.
+- Secondary metadata sits on one restrained line when present; missing optional metadata creates no blank line. Avoid expanded labels for every field. Table cells use compact padding, tabular dates and one status column. Full title remains available in the editor; do not require hover to access it.
+- Board toolbar: view selector, Group by, Filters with active count/Clear, and Card details. Group by supports Status, Category, Project and Business Unit. Filters narrow the data independently of grouping. Keep current selections when changing views; persist display preferences without persisting business data outside its normal database.
+- Board columns are 280–320px wide, with 12px column gaps; columns use a named horizontal viewport, never squeeze five columns into unreadable slivers. Column heading includes name and visible count. Cards have 12px padding, 8px internal gap and 8px separation. Title may occupy two lines. Avoid empty minimum-height cards and giant Move to selectors.
+- Card details toggles control due date, priority, project, category and Business Unit metadata. Default is due date and priority, with other fields available. Status remains visible when grouping by another property. Opening a title exposes complete content, while an overflow provides edit/delete and an explicit movement alternative. Do not repeat the column name on every card when grouping already communicates that field.
+- Status grouping has five drop destinations. Category/project/unit grouping changes only that grouped field on drop, including an explicit Unassigned group for missing values. Unsupported grouping movement must be visibly disabled with an edit alternative; never silently change status in a category column. Announce destination and saved result; retain keyboard and touch movement behavior.
+- Phone list becomes a compact two-line arrangement with title, status and overflow; no horizontal page overflow. Board remains a deliberate horizontal column viewport with keyboard access. Menus must stay within the viewport and return focus to their trigger. Empty filter results explain that filters are active and offer Clear filters.
+
+### Calendar duration resizing
+
+The supplied 7.57-second Outlook video was extracted at 2fps. Frames 001–007 show a three-hour block moving; frame 009 shows a selected 15:00–18:00 block with centered top/bottom edge handles; frames 011–015 show the bottom contracting to 16:30 while the top remains at 15:00. The requested expansion is duration resizing, not expansion of task details. Start-edge resizing is the symmetric product design, not separately proven by the clip.
+
+- Keep movement and duration controls distinct. Moving preserves duration; top edge changes start while preserving end; bottom edge changes end while preserving start. Render a small centered edge marker with a 44px target; use a vertical-resize cursor. Show handles on selected/focus state and provide a discoverable touch/editor alternative. Hit areas must not overlap each other or swallow the title/move action in a half-hour block.
+- During drag, preview the interval and block bounds against the half-hour grid. Use 30-minute snap and minimum duration. Restrict bounds to 00:00–24:00; allow exact midnight end, reject reversal/out-of-day changes with feedback. No layout transition while following a pointer; geometry tracks the gesture immediately.
+- Commit once on pointer release or keyboard confirmation. Escape/pointer cancellation restores original geometry without saving. Keyboard focus on an edge supports arrows in 30-minute steps and Enter to commit; announce new bounds and duration. Lost pointer capture must not accidentally commit stale state. Editor time fields remain an equivalent alternative.
+- Resize preserves plan/task/project/unit IDs and updates linked planned-only daily bounds through existing atomic actions. Recorded actual work is historical and never stretches to match a plan. A small timer action uses a play icon with accessible Start timer label and 44px hit target; it does not occupy a second oversized block row.
+
+### Daily activity, timer and Business Unit
+
+- Business Unit is optional on task, project and daily entry forms; present an explicit Unassigned choice. Preserve a stored unknown/retired value in historical records. Group/filter by unit without treating unassigned as an error or inferring a unit from title.
+- Daily half-hour rows have a 72px (4.5rem at normal text size) minimum, with intrinsic content growth when short entries, larger text or wrapped labels need more space. Preserve 44px controls and avoid nested card scrollbars. A daily activity spanning several half-hour slots reads as one activity across those slots. Recorded activity is placed on its actual interval; planned-only activity uses its planned interval. Never span the union of widely separated planned and actual intervals. Retain the other interval as explicit text for comparison. Show title/status/actions once, retain slot grid lines/time labels, and expose its actual interval and duration. Multiple records or pauses must stay distinguishable; grouping is presentation only and must not duplicate work or merge unrelated IDs.
+- Timer shows HH:mm:ss using tabular/mono digits, including seconds in review where meaningful. Starting another task begins a new session at zero unless the user explicitly resumes an existing timer. Historical minutes and prior segments never appear as elapsed time of a new session.
+- Closed and Cancelled are terminal but distinct; Cancelled must not count as completed. On Hold stays visible as paused work. All five statuses appear in filters, summaries and legends. Any overdue policy involving On Hold is explicit; exclude Cancelled from actionable overdue counts. Empty calendar/daily slots have no status.
+
+### Revision acceptance evidence
+
+Root owns production browser acceptance at 375/768/1280px, light/dark/black and large text. Required evidence: compact rows with long/missing metadata, five-status control keyboard and error states, board group/filter/card-detail changes, status and nonstatus drops, live resize/cancel/save/reload with linked records, a half-hour block with nonoverlapping controls, a multi-slot activity shown once, timer stop/save/new-session zero and seconds, and contrast-safe custom colors reflected in charts. Screenshots alone cannot prove keyboard, pointer, storage or screen-reader behavior. No new accessibility debt is accepted by this design contract.

@@ -11,7 +11,7 @@ Foundation owns package/config, `src/domain`, `src/data`, `src/lib`. Shell owns 
 ## Models (`src/domain/models.ts`)
 
 All records: `id:string`, `createdAt:string` ISO timestamp, `updatedAt:string`, `demo:boolean`.
-`Status = 'Open' | 'In Progress' | 'Closed'`; `Priority = 'Low' | 'Normal' | 'High'`; `WorkType = 'task' | 'operational' | 'project'`.
+`Status = 'Open' | 'In Progress' | 'On Hold' | 'Closed' | 'Cancelled'`; `Priority = 'Low' | 'Normal' | 'High'`; `WorkType = 'task' | 'operational' | 'project'`.
 
 - Task: `title,description:string; status:Status; priority:Priority; type:WorkType; categoryId,projectId:string|null; dueDate:string|null` (YYYY-MM-DD); `assignee,ticket,latestUpdate:string; subtasks:{id:string,title:string,done:boolean}[]; archived:boolean`.
 - Project: `name,description:string; status:Status; categoryId:string|null; dueDate:string|null; owner,link:string; archived:boolean`.
@@ -65,3 +65,16 @@ Deleting a calendar plan sets optional `calendarDetached` on its remaining daily
 Settings validation and defaults now live in `src/domain/settings.ts`, re-exported through `models.ts`. Theme supports `black` for Super dark, alongside light, dark and system.
 
 Optional taskDetached markers on Plan, DailyEntry and Timer preserve explicit Task deletion through ordinary history edits, plan rescheduling, timer starts/saves, reload and backup restore. Selecting an existing task explicitly reattaches the work. Manual planned bounds added at timer review apply only to the selected review date; other overnight dates retain only their own existing or captured planned context.
+
+
+## Five-status and Business Unit contracts
+
+`domain/models` exports `STATUS_VALUES` in the order Open, In Progress, On Hold, Closed, Cancelled. `STATUSES` is a compatible alias. `isTerminalStatus(status)` is true only for Closed and Cancelled. On Hold remains unfinished but does not count as active work. Completion counts use Closed alone; cancellation is separate.
+
+Task, Project, Plan, DailyEntry, Timer and Timer.sourceDetails accept optional `businessUnit:string`. Missing legacy fields normalize to `''` through the schema and workspace read boundary; the UI labels that value Unassigned. Optional TypeScript properties preserve older typed create inputs and fixtures. No database index/version change is needed for these additive scalar values. Backup version 1 remains compatible and retains all five statuses and unit snapshots. Tracker and daily CSV append Business Unit; older tracker CSV without the column still imports with an empty unit.
+
+`data/workUnits.inheritedBusinessUnit` preserves any explicitly supplied unit, including empty string (Unassigned); only omitted/undefined input inherits selected task, captured plan, or project context. Creation actions resolve raw input before schema defaults. A selected plan snapshot takes precedence over its task when no task is explicitly selected. New connected plans/daily entries and their newly created canonical tasks share that captured unit. Changing a task/project unit does not rewrite saved plan or daily history, including an explicitly unassigned snapshot. Task IDs and deletion markers keep their existing semantics; no title matching is introduced.
+
+Settings includes `businessUnits:string[]` (default `[]`) and `statusColors:Partial<Record<Status,string>>` (default `{}`, validated #RRGGBB). The partial palette intentionally permits individual overrides without requiring every status key. `actions.renameBusinessUnit(previous,next)` deliberately renames exact unit labels atomically across settings and work records, including timer source snapshots; this explicit rename is the exception to ordinary snapshot preservation. The rename also maps the exact `businessUnit:<unit>` key in taskView.hiddenGroups and deduplicates an existing target, preserving hidden-group preferences in the same transaction. Removing a configured unit option does not remove old labels from saved history.
+
+Optional `settings.taskView` persists `view:'list'|'table'|'board'`, `groupBy:'status'|'category'|'project'|'businessUnit'`, `hiddenGroups:string[]`, and boolean `fields` for priority/category/project/businessUnit/dueDate/assignee/latestUpdate. `data/settingsActions` owns settings/notebook/unit mutations, re-exported through `actions`, keeping record mutations separate from preference operations.

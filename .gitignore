@@ -12,3 +12,4 @@ playwright-report/
 browser-profiles/
 .qa-state/
 .DS_Store
+/work/

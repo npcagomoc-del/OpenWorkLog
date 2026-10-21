@@ -23,19 +23,23 @@ On a narrow phone screen, the bottom bar opens Today, Tasks, Daily Log and Notes
 3. Add an owner, due date, ticket, project, description, latest update or subtasks as needed.
 4. Save the task.
 
-Use the same three statuses throughout the app:
+Use these five statuses throughout the app. The colors shown here are defaults; your workspace can use custom status colors:
 
 | Status | Color | Use |
 | --- | --- | --- |
 | Open | Blue | Work has not started or still needs action. |
 | In Progress | Yellow | Work is underway. |
+| On Hold | Purple | Work is paused and may resume. |
 | Closed | Green | Work is finished. |
+| Cancelled | Muted rose | Work was cancelled; it is not counted as completed. |
 
-Choose **List** for readable task summaries, **Table** for the tracker columns, or **Kanban** for the three status groups. Change a task's status with its status selector or **Move to** control.
+Choose **List** for compact task rows, **Table** for the tracker columns, or **Kanban** for grouped cards. Each task has one status control showing its current value. Open its title for full details and use its action menu for secondary actions.
 
-In Kanban, drag a task by its grip into another status column. With a mouse, move the handle a little to begin dragging. On a touch screen, hold the handle briefly (about 200 milliseconds), then move it. For a keyboard, focus the handle, press `Space` or `Enter` to pick up the task, use Right/Down for the next status or Left/Up for the previous status, then press `Space` or `Enter` to drop. `Esc` cancels. The status selector remains available as an alternative to dragging.
+In Kanban, use **Group by** to organize cards by Status, Category, Project or Business Unit. **Card details** controls the **Visible groups** and **Visible fields**. Hiding a group changes the view and does not delete its records. Filters still apply when you change the grouping.
 
-Search by task, ticket or update. Filter by status, category or work type. Click the task title to edit its full details; use its pencil control for a quick rename. **Export CSV** exports the tasks currently matching the My tasks filters.
+In Kanban, drag a task by its grip into another column. A drop changes only the field selected in **Group by**: for example, a Category drop changes the category while keeping the status. Use the unassigned column to clear an optional group value. The **Move to** menu offers the same destinations. With a mouse, move the handle a little to begin dragging. On a touch screen, hold the handle briefly (about 200 milliseconds), then move it. For a keyboard, focus the handle, press `Space` or `Enter` to pick up the task, use Right/Down for the next group or Left/Up for the previous group, then press `Space` or `Enter` to drop. `Esc` cancels. The status selector remains available as an alternative to dragging.
+
+Search by task, ticket or update. Filter by status, category, work type, project or Business Unit. Click the task title to edit its full details. **Export CSV** exports the tasks currently matching the My tasks filters.
 
 Deleting a task requires confirmation. Saved daily entries, plans and notes retain their content, but their link to the deleted task is removed. Download a backup before removing information you may need later.
 
@@ -55,24 +59,30 @@ Use **Projects** to create and edit projects with a name, owner, due date, categ
 
 Operational work is a work type on the task tracker. You can rename the display labels for Task, Operational and Project in **Settings → Labels & profile**. This changes the workspace terminology while keeping record links intact.
 
+Business Unit is an optional label on tasks, projects and daily entries. In Daily log, select a unit or **Unassigned**. Maintain suggestions in **Settings → Business Units**, then select one or enter a unit in the record editor. Renaming a unit there updates linked records. Removing a suggestion keeps historical values on existing records. Leave it unassigned when it does not apply. A unit is a grouping/filtering label; it does not create a shared team workspace.
+
 Use **Settings → Categories** to add a category and color, rename it, or archive it. Save each edited category. Archiving keeps its name on existing records and hides it from new work selections. Restore it when it is needed again.
 
 ## Plan work on the calendar
 
-Open **Calendar**, choose a day, week or month view, and add a plan. Set its date, start/end times, title, linked task, project, category and notes. Plans describe intended time; they do not count as actual productive time.
+Open **Calendar**, choose a day, week or month view, and add a plan. Set its date, start/end times, title, linked task, project, category, optional **Business Unit / Requested for**, and notes. Plans describe intended time; they do not count as actual productive time.
 
 Open a plan to:
 
 - **Edit plan** or delete it.
 - **Log work from this plan** to open a linked daily entry with its planned times.
 - **Open daily entry** when that plan already has an entry.
-- **Start timer now** to measure work from the current time, keeping planned time separate.
+- **Start timer** to measure work from the current time, keeping planned time separate.
 
 Finish or review the active timer before starting another. Deleting a calendar plan keeps the linked task and saved daily work history.
 
 Moving a plan also moves the date/times of its linked planned-only daily entry. Once actual work exists, its recorded date and actual times remain history. Deleting a plan keeps its daily entry's planned times, and ordinary remarks edits or timer use do not recreate the deleted plan. Explicitly changing the daily planned times can create a new calendar plan.
 
 In the Day and Week time grids, drag a plan by its grip to a new date/time slot. The move preserves its duration and snaps its start to a half-hour slot. On touch, hold the handle briefly before moving it. With a keyboard, focus the grip, press `Space` or `Enter`, use Up/Down for 30-minute steps and Left/Right for another visible day, then press `Space` or `Enter` to save. `Esc` cancels. A move that would end after midnight is rejected. Dragging is limited to the displayed time grid; use **Edit plan** for exact times, dates outside the current view, or the Month view.
+
+To change a plan's duration in Day or Week view, use its top or bottom edge resize control. Hover over or focus the block to reveal the handles; on touch screens, tap the movement grip to select the plan and show the edge handles before dragging an edge. The top changes the start while keeping the end; the bottom changes the end while keeping the start. Drag an edge with a mouse or touch and release to save. The preview snaps to 30-minute intervals, keeps at least 30 minutes, and stays within 00:00–24:00. For a keyboard, focus an edge control, use Up/Down for 30-minute steps, then Enter or Space to save. Escape cancels the preview. **Edit plan** remains available for exact times.
+
+Resizing changes planned time and its linked planned-only daily entry. It keeps the same links and does not stretch recorded actual work or add productive time. Use the separate movement grip to move the whole block while preserving its duration.
 
 ## Record the full day in Daily log
 
@@ -91,12 +101,13 @@ Each daily entry keeps these report fields:
 | Task / activity and Subtasks | What you planned or handled. |
 | Work done | The actual actions and results. |
 | Actual from / to | When the work happened. |
-| Entry status | Open, In Progress or Closed for this daily entry. |
+| Entry status | Open, In Progress, On Hold, Closed or Cancelled for this daily entry. |
+| Business Unit | Optional unit for this activity, or Unassigned. |
 | Remarks | Follow-up information or context. |
 
 Time entry fields use 24-hour `HH:mm`, even when you choose another display format in Settings. Enter both start and end for a time interval. For manual work spanning midnight, create one entry for each date; use `24:00` as the first date's end and `00:00` as the next date's start.
 
-An activity can span several half-hour slots. Keep it as one entry with its real times; the timeline allocates the appropriate minutes to each slot. For example, 13:10–13:42 contributes 20 minutes to 13:00–13:30 and 12 minutes to 13:30–14:00.
+An activity can span several half-hour slots. Keep it as one entry with its real times; the timeline shows one block across those slots, with its title, status and actions once. Planned and actual intervals remain labeled separately; pauses and separate records remain distinct. Actual intervals can show seconds. Active saved time excludes gaps between intervals and pauses. Productive totals use actual work, rather than counting every covered grid cell. For example, 13:10–13:42 is one activity with 32 productive minutes, spanning the 13:00–13:30 and 13:30–14:00 grid rows.
 
 Lunch is part of the record. Click a lunch slot and save an entry with **Lunch / break — exclude from productive time** selected. The lunch shading is a schedule guide; it does not create a saved lunch record by itself. Lunch/break entries are excluded from productive-time totals.
 
@@ -106,13 +117,13 @@ The daily entry status is separate from its linked task's status. Saving a repor
 
 ## Use the timer
 
-1. In **Daily log**, use **Planned work** to choose a calendar plan or daily activity for the selected log date. Change the daily log date to see another day's work. You can also use a daily activity's **Start timer** button or a calendar plan's **Start timer now**.
+1. In **Daily log**, use **Planned work** to choose a calendar plan or daily activity for the selected log date. Change the daily log date to see another day's work. You can also use a daily activity's **Start timer** button or a calendar plan's **Start timer**.
 2. For new work, leave **Planned work** at **New session or existing task**, select an existing linked task or **New task from this session**, enter a session name and choose **Start timer**.
 3. Use **Pause** for time that should not count, then **Resume** when working again.
 4. Choose **Stop and review**.
 5. Review the linked details, write **Work done**, choose the entry status and **Save work log**.
 
-Only one unfinished timer is allowed. Its state and time segments are saved locally, so a reload does not reset it. The timer shows its planned date/time, linked task and actual start when available. Choosing past or future planned work does not backdate the measurement: the timer always records actual time from now. A running timer continues to accrue elapsed time while the app is closed; pause or stop it before leaving if that time should not count. Paused time is excluded. A session spanning midnight is allocated to the relevant daily dates using the workspace time zone.
+Only one unfinished timer is allowed. Its state and time segments are saved locally, so a reload does not reset it. Elapsed time is shown as hours:minutes:seconds for the current session. **Previously saved for this activity** is a separate historical total. A new session starts at zero; choosing a task does not add that task's earlier recorded time to the new timer. Pause/Resume continues the same session and Stop and review freezes its elapsed time. The timer shows its planned date/time, linked task and actual start when available. Choosing past or future planned work does not backdate the measurement: the timer always records actual time from now. A running timer continues to accrue elapsed time while the app is closed; pause or stop it before leaving if that time should not count. Paused time is excluded. A session spanning midnight is allocated to the relevant daily dates using the workspace time zone.
 
 Closing the review leaves the session available through **Review session**. **Discard** removes that unfinished timer after confirmation; saved work logs and linked tasks remain.
 
@@ -164,9 +175,9 @@ Use **Reports → Import tracker CSV**, choose the file and inspect the preview.
 
 Required headings are **Task** and **Status**. Headings are case-insensitive. Supported optional headings are:
 
-`Category, By Whom, By When, Latest Update, Type, Priority, Project, Description, Ticket`
+`Category, Business Unit, By Whom, By When, Latest Update, Type, Priority, Project, Description, Ticket`
 
-Use exact status values `Open`, `In Progress` or `Closed`. Dates use `YYYY-MM-DD`; priorities are `Low`, `Normal` or `High` (blank defaults to Normal). Category and Project names must already exist; matching is case-insensitive. Type matches the current labels in Settings; blank or unrecognized Type becomes Task. An exported `ID` is not reused on import: every imported task receives a new ID. Subtask checklists are not imported by tracker CSV.
+Use exact status values `Open`, `In Progress`, `On Hold`, `Closed` or `Cancelled`. Dates use `YYYY-MM-DD`; priorities are `Low`, `Normal` or `High` (blank defaults to Normal). Category and Project names must already exist; matching is case-insensitive. Type matches the current labels in Settings; blank or unrecognized Type becomes Task. An exported `ID` is not reused on import: every imported task receives a new ID. Subtask checklists are not imported by tracker CSV.
 
 Minimal example:
 
@@ -196,6 +207,10 @@ Your records belong to this browser profile and URL on this device. They do not 
 
 ## Appearance and offline use
 
-In **Settings → Appearance**, choose Light, Dark, Super dark or System, text size, time display, week start and sidebar preference. Super dark uses near-black surfaces; System follows the device's light/dark preference. The toolbar theme control cycles through the four appearance options. Animations respect the device's reduced-motion preference.
+In **Settings → Appearance**, choose Light, Dark, Super dark or System, text size, time display, week start and sidebar preference. Super dark uses near-black surfaces; System follows the device's light/dark preference. In **Settings → Status colors**, choose each status color with its picker or **Hex color** field. Check the Light, Dark and Super dark previews, then choose **Save status colors**. **Reset to defaults** restores the default palette. The app derives readable text and tints, and applies the palette to status controls and charts; the status names keep the meaning clear.
+
+The toolbar theme control cycles through the four appearance options. Animations respect the device's reduced-motion preference.
+
+Hosting the app over HTTPS does not move the existing local workspace. Before changing URLs, download a private JSON backup from the old URL; restore it at the final HTTPS URL after reviewing the destination replacement preview. Keep backups out of the hosting upload. Each device/profile/origin still holds its own records.
 
 After the production app has loaded and cached successfully, use it offline from the same installed app or browser origin. Records save locally while offline. Reconnect to receive app updates. Download backups regularly, especially before clearing site data, switching profiles or changing devices. Offline operation does not provide cloud backup or multi-user synchronization.
