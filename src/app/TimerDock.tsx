@@ -42,13 +42,14 @@ export function TimerDock() {
     .join(':');
   return (
     <div className={`timer-dock timer-dock--${timer.state}`}>
-      <Link to="/daily" aria-label={`Timer: ${timer.title}, ${elapsed}`}>
+      <Link className="text-link" to="/daily" title={`Timer: ${timer.title}`}>
+        <span className="visually-hidden">Timer: </span>
         <Clock3 size={18} />
         <span className="timer-dock-name">{timer.title}</span>
         <strong>{elapsed}</strong>
       </Link>
       {timer.state === 'review' ? (
-        <Link className="timer-review" to="/daily">
+        <Link className="timer-review text-link" to="/daily">
           Review
         </Link>
       ) : (

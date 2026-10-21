@@ -84,14 +84,14 @@ export function PlanEditor({
         <Field
           label="Linked task"
           htmlFor="plan-task"
-          hint="Use an existing task to keep its project and category connected."
+          hint={draft.taskDetached ? 'Choose a task to link this plan again. Leaving it unlinked keeps its history.' : 'Choose an existing task, or save this plan to add a new task to My Tasks.'}
         >
           <select
             id="plan-task"
             value={draft.taskId ?? ''}
             onChange={(event) => linkTask(event.target.value)}
           >
-            <option value="">Independent plan</option>
+            <option value="">{draft.taskDetached ? 'No linked task' : 'Create a task for this plan'}</option>
             {tasks
               .filter((task) => !task.archived || task.id === draft.taskId)
               .map((task) => (

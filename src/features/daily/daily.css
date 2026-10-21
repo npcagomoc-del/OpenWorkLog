@@ -24,7 +24,7 @@
 .timeline-minutes { display: grid; align-content: start; gap: var(--space-3); padding-top: var(--space-3); color: var(--muted); font-size: var(--text-sm); }
 .timeline-mobile-duration { display: none; color: var(--muted); font-size: var(--text-xs); }
 .empty-slot { justify-self: start; font-weight: 400; color: var(--muted); }
-.entry-details summary, details.card summary { cursor: pointer; padding: var(--space-2) 0; font-weight: 600; }
+.entry-details summary, details.card summary { min-height: 44px; cursor: pointer; padding: var(--space-2) 0; font-weight: 600; }
 .entry-details .form-grid, .entry-manage { padding-top: var(--space-4); }
 .check-row { display: flex; align-items: center; gap: var(--space-3); font-size: var(--text-sm); min-height: 44px; }
 .check-row input { width: 20px; height: 20px; flex-shrink: 0; }
@@ -43,3 +43,11 @@
 .timeline-row { grid-template-columns: 5.5rem minmax(0, 1fr); }
 .timeline-item { display: grid; grid-template-columns: minmax(0, 1fr) 5rem; gap: var(--space-3); align-items: start; }
 @media (max-width: 700px) { .timeline-row { grid-template-columns: 3.5rem minmax(0, 1fr); } .timeline-item { grid-template-columns: minmax(0, 1fr); } }
+.timer-start-form { display: grid; gap: var(--space-4); }
+.timer-plan-context { display: flex; align-items: flex-start; gap: var(--space-3); padding: var(--space-3) var(--space-4); border: 1px solid var(--border); border-radius: var(--radius-sm); background: var(--surface-soft); font-size: var(--text-sm); }
+.timer-plan-context > svg { flex-shrink: 0; margin-top: var(--space-1); color: var(--accent); }
+.timer-plan-context > div { display: grid; gap: var(--space-1); min-width: 0; }
+.timer-plan-context span { color: var(--muted); }
+.timer-plan-context strong, .timer-plan-context a { overflow-wrap: anywhere; }
+.timeline-entry-actions { display: flex; flex-wrap: wrap; gap: var(--space-2); align-items: center; }
+.timeline-entry-actions .btn { font-size: var(--text-xs); }

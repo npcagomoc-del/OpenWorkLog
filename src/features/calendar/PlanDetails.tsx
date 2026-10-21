@@ -30,7 +30,7 @@ export function PlanDetails({
     setBusy(true);
     setError('');
     try {
-      const existing = dailyEntries.find((entry) => entry.planId === plan.id);
+      const existing = dailyEntries.find((entry) => entry.planId === plan.id && entry.date === plan.date);
       const entry =
         existing ??
         (await actions.createDailyEntry({
@@ -68,6 +68,7 @@ export function PlanDetails({
       await startTimer({
         title: plan.title,
         planId: plan.id,
+        sourceEntryId: dailyEntries.find(entry => entry.planId === plan.id && entry.date === plan.date)?.id ?? null,
         taskId: plan.taskId,
         projectId: plan.projectId,
         categoryId: plan.categoryId,
@@ -148,7 +149,7 @@ export function PlanDetails({
             busy={busy}
           >
             <FilePenLine size={18} />
-            {dailyEntries.some((entry) => entry.planId === plan.id)
+            {dailyEntries.some((entry) => entry.planId === plan.id && entry.date === plan.date)
               ? 'Open daily entry'
               : 'Log work from this plan'}
           </Button>
