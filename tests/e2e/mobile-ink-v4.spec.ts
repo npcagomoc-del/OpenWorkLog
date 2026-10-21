@@ -147,6 +147,7 @@ test('real pen input saves handwriting across offline production reload', async 
   await expect.poll(() => page.evaluate(() => Boolean(navigator.serviceWorker.controller))).toBe(true);
   await context.setOffline(true);
   await page.reload();
+  await page.getByRole('button', { name: 'Add handwriting', exact: true }).click();
   const canvas = page.getByLabel('Handwriting canvas', { exact: true });
   await canvas.scrollIntoViewIfNeeded();
   const bounds = await canvas.boundingBox();
