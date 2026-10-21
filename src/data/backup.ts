@@ -149,7 +149,7 @@ export async function restoreBackup(text: string): Promise<void> {
     await db.plans.bulkAdd(data.plans);
     await db.dailyEntries.bulkAdd(data.dailyEntries);
     await db.timers.bulkAdd(data.timers);
-    await db.settings.put(data.settings);
+    await db.settings.put({ ...data.settings, restoreGeneration: crypto.randomUUID() });
     await reconcileWorkLinks();
   });
 }

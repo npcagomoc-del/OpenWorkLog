@@ -24,8 +24,14 @@ export const settingsSchema = z
       })
       .optional(),
     ownerName: z.string().optional(),
+    restoreGeneration: z.string().uuid().optional(),
     connectedWorkVersion: z.literal(1).optional(),
     notebooks: z.array(z.string().trim().min(1)).optional(),
+    actionAccent: z
+      .string()
+      .regex(/^#[0-9a-fA-F]{6}$/)
+      .optional(),
+    appearancePreset: z.enum(['classic', 'claude', 'apple']).default('classic'),
     theme: z.enum(['light', 'dark', 'black', 'system']),
     sidebarCollapsed: z.boolean(),
     textSize: z.enum(['normal', 'large']),
@@ -62,6 +68,7 @@ export const DEFAULT_SETTINGS: Settings = {
   businessUnits: [],
   statusColors: {},
   theme: 'system',
+  appearancePreset: 'classic',
   connectedWorkVersion: 1,
   sidebarCollapsed: false,
   textSize: 'normal',

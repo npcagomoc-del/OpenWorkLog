@@ -5,6 +5,7 @@ export { DEFAULT_SETTINGS, settingsSchema } from './settings';
 
 import { z } from 'zod';
 import { statusSchema } from './status';
+import { inkDocumentSchema } from './ink';
 import { validTimerTimeline } from './timerValidity';
 
 export type { Status } from './status';
@@ -68,6 +69,7 @@ export const noteSchema = z.object({
   notebook: z.string(),
   tags: z.array(z.string()).optional(),
   content: z.string(),
+  ink: inkDocumentSchema.optional(),
   summary: z.string(),
   questions: z.string(),
   references: z.string(),
@@ -207,7 +209,7 @@ export type Workspace = {
 };
 export class WorkspaceError extends Error {
   constructor(
-    readonly code: 'missing' | 'linked' | 'invalid' | 'timer',
+    readonly code: 'missing' | 'linked' | 'invalid' | 'timer' | 'stale',
     message: string,
   ) {
     super(message);

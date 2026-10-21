@@ -18,6 +18,8 @@ import {
 } from '../domain/models';
 import { connectEntry, connectPlan } from './connectedWork';
 import { db } from './db';
+import { syncDailyTask } from './dailyTaskSync';
+import { updateNoteInk } from './inkActions';
 import { checkLinks } from './relations';
 import {
   deleteNotebook,
@@ -123,23 +125,28 @@ async function createDailyEntry(input: DailyEntryCreateInput): Promise<DailyEntr
   });
 }
 async function createPlan(input: PlanCreateInput): Promise<Plan> {
-  return db.transaction('rw', db.tables, async () =>
-    connectPlan(
+  return db.transaction('rw', db.tables, async () => {
+    const connected = await connectPlan(
       planSchema.parse({
         ...input,
         ...recordMeta(),
         businessUnit: await inheritedBusinessUnit(input),
       }),
-    ),
-  );
+    );
+    if (input.taskId) await tasks.update(input.taskId, { categoryId: connected.categoryId });
+    return connected;
+  });
 }
 async function updatePlan(id: string, patch: Partial<PlanCreateInput>): Promise<Plan> {
   return db.transaction('rw', db.tables, async () => {
     const previous = await db.plans.get(id);
     if (!previous) throw new WorkspaceError('missing', 'This plan no longer exists.');
-    return connectPlan(
+    const connected = await connectPlan(
       planSchema.parse({ ...previous, ...patch, updatedAt: new Date().toISOString() }),
     );
+    if (connected.taskId && previous.categoryId !== connected.categoryId)
+      await tasks.update(connected.taskId, { categoryId: connected.categoryId });
+    return connected;
   });
 }
 async function updateDailyEntry(
@@ -149,7 +156,7 @@ async function updateDailyEntry(
   return db.transaction('rw', db.tables, async () => {
     const previous = await db.dailyEntries.get(id);
     if (!previous) throw new WorkspaceError('missing', 'This entry no longer exists.');
-    return connectEntry(
+    const connected = await connectEntry(
       dailyEntrySchema.parse({
         ...previous,
         ...patch,
@@ -161,6 +168,8 @@ async function updateDailyEntry(
         updatedAt: new Date().toISOString(),
       }),
     );
+    await syncDailyTask(previous, connected);
+    return connected;
   });
 }
 async function deletePlan(id: string): Promise<void> {
@@ -201,6 +210,7 @@ export const actions = {
   deleteCategory,
   createNote: notes.create,
   updateNote: notes.update,
+  updateNoteInk,
   deleteNote: notes.remove,
   createPlan,
   updatePlan,
