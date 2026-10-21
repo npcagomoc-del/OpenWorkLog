@@ -1,4 +1,11 @@
-import { useCallback, useEffect, useRef, useState, type PointerEvent } from 'react';
+import {
+  useCallback,
+  useEffect,
+  useLayoutEffect,
+  useRef,
+  useState,
+  type PointerEvent,
+} from 'react';
 import type { InkDocument, InkPoint, InkStroke } from '../../domain/ink';
 import { eraseAt, paintInk, pointFromClient } from './inkGeometry';
 
@@ -24,15 +31,16 @@ export function InkCanvas({ ink, onCommit, tool, color, width, finger, expanded 
   const commit = useRef(onCommit);
   const frame = useRef(0);
   const [limit, setLimit] = useState('');
-  latest.current = ink;
-  commit.current = onCommit;
+  useLayoutEffect(() => {
+    commit.current = onCommit;
+  }, [onCommit]);
   const redraw = useCallback(() => {
     cancelAnimationFrame(frame.current);
     frame.current = requestAnimationFrame(() => {
       if (canvas.current) paintInk(canvas.current, active.current?.drawing ?? latest.current);
     });
   }, []);
-  useEffect(() => {
+  useLayoutEffect(() => {
     latest.current = ink;
     active.current = null;
     redraw();
@@ -156,4 +164,3 @@ export function InkCanvas({ ink, onCommit, tool, color, width, finger, expanded 
     </div>
   );
 }
-

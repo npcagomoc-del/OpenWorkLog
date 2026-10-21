@@ -57,8 +57,14 @@ export function NoteEditor({ note, notebook, notebooks, tasks, onClose, onSaved 
     setBusy(true);
     setError('');
     try {
-      const input = {
-        ...draft,
+      const input: Omit<NoteCreateInput, 'ink'> = {
+        content: draft.content,
+        summary: draft.summary,
+        questions: draft.questions,
+        references: draft.references,
+        taskId: draft.taskId,
+        pinned: draft.pinned,
+        archived: draft.archived,
         title: draft.title.trim(),
         notebook: draft.notebook.trim() || 'General',
         tags: parseTags(tags),
