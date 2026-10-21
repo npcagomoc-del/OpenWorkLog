@@ -201,6 +201,7 @@ export default function NotesPage() {
           {selected && (
             <NoteReader
               note={selected}
+              restoreGeneration={workspace.settings.restoreGeneration ?? ''}
               busy={busy}
               taskTitle={workspace.tasks.find((task) => task.id === selected.taskId)?.title}
               onEdit={() => setEditor({ note: selected })}

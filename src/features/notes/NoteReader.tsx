@@ -2,17 +2,27 @@ import { Archive, Check, Pencil, Pin, RotateCcw, Trash2 } from 'lucide-react';
 import { Badge, Button, Card, IconButton } from '../../components/ui';
 import type { Note, NoteCreateInput } from '../../domain/models';
 import { NoteContent } from './NoteContent';
+import { NoteHandwriting } from './NoteHandwriting';
 import { toggleChecklist } from './noteLogic';
 
 type Props = {
   readonly note: Note;
+  readonly restoreGeneration: string;
   readonly taskTitle: string | undefined;
   readonly onEdit: () => void;
   readonly onDelete: () => void;
   readonly onUpdate: (patch: Partial<NoteCreateInput>) => void;
   readonly busy: boolean;
 };
-export function NoteReader({ note, taskTitle, onEdit, onDelete, onUpdate, busy }: Props) {
+export function NoteReader({
+  note,
+  taskTitle,
+  onEdit,
+  onDelete,
+  onUpdate,
+  busy,
+  restoreGeneration,
+}: Props) {
   return (
     <Card className="note-reader">
       <div className="note-reader-head stack">
@@ -81,6 +91,11 @@ export function NoteReader({ note, taskTitle, onEdit, onDelete, onUpdate, busy }
             This note is ready for your ideas. Choose Edit note to start writing.
           </p>
         )}
+        <NoteHandwriting
+          key={`${note.id}:${restoreGeneration}`}
+          note={note}
+          restoreGeneration={restoreGeneration}
+        />
         {note.questions && (
           <section className="note-review-questions">
             <h3>Review questions</h3>
