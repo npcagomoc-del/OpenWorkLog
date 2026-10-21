@@ -46,6 +46,7 @@ export default function TasksPage() {
       type: params.get('type') ?? '',
     }));
   }, [params]);
+  const boardFocus = focusMode && preferences.view === 'board';
   const filtered = useMemo(
     () =>
       filterTasks(workspace.tasks, filters).filter(
@@ -53,6 +54,14 @@ export default function TasksPage() {
       ),
     [workspace.tasks, filters, projectId],
   );
+  function clearFilters() {
+    setFilters({ query: '', status: '', categoryId: '', type: '', projectId: '', businessUnit: '' });
+    const next = new URLSearchParams(params);
+    next.delete('project');
+    next.delete('search');
+    next.delete('type');
+    setParams(next);
+  }
 
   async function move(task: Task, next: Status) {
     try {
@@ -88,8 +97,8 @@ export default function TasksPage() {
     }
   }
   return (
-    <div className="page-stack tasks-page">
-      <PageHeader
+    <div className={`page-stack tasks-page${boardFocus ? ' tasks-page--board-focus' : ''}`}>
+      {!boardFocus && <PageHeader
         eyebrow="YOUR WORKSPACE"
         title="My tasks"
         description="A clear view of what needs your attention."
@@ -97,7 +106,7 @@ export default function TasksPage() {
           <>
             <Button onClick={() => setFocusMode(!focusMode)} aria-pressed={focusMode}>
               <Maximize2 size={17} />
-              {focusMode ? 'Exit focus' : 'Focus view'}
+              {focusMode ? 'Exit focus' : preferences.view === 'board' ? 'Focus board' : 'Focus view'}
             </Button>
             <Button variant="primary" onClick={() => setEditor({ task: null })}>
               <Plus size={18} />
@@ -105,12 +114,17 @@ export default function TasksPage() {
             </Button>
           </>
         }
-      />
-      <TaskSummary
+      />}
+      {!boardFocus && <TaskSummary
         tasks={workspace.tasks}
         today={todayKey(new Date(), workspace.settings.timezone)}
-      />
+      />}
       <TaskToolbar
+        onClearFilters={clearFilters}
+        projectFilterActive={Boolean(projectId)}
+        focus={boardFocus}
+        onExitFocus={() => setFocusMode(false)}
+        onNewTask={() => setEditor({ task: null })}
         filters={filters}
         onFilter={(patch) => setFilters((current) => ({ ...current, ...patch }))}
         categories={workspace.categories}
@@ -129,7 +143,7 @@ export default function TasksPage() {
           )
         }
       />
-      <div className="split small muted">
+      {!boardFocus && <div className="split small muted">
         <span>
           {filtered.length} {filtered.length === 1 ? 'task' : 'tasks'}
           {projectId && (
@@ -155,7 +169,7 @@ export default function TasksPage() {
         <Link to="/settings" className="text-link">
           Manage categories & types
         </Link>
-      </div>
+      </div>}
       {filtered.length ? (
         <TaskViews
           tasks={filtered}
@@ -183,21 +197,8 @@ export default function TasksPage() {
               <Button
                 variant="primary"
                 onClick={() => {
-                  if (workspace.tasks.length) {
-                    setFilters({
-                      query: '',
-                      status: '',
-                      categoryId: '',
-                      type: '',
-                      projectId: '',
-                      businessUnit: '',
-                    });
-                    const next = new URLSearchParams(params);
-                    next.delete('project');
-                    next.delete('search');
-                    next.delete('type');
-                    setParams(next);
-                  } else setEditor({ task: null });
+                  if (workspace.tasks.length) clearFilters();
+                  else setEditor({ task: null });
                 }}
               >
                 {workspace.tasks.length ? 'Clear filters' : 'Create task'}

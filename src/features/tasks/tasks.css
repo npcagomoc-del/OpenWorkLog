@@ -38,6 +38,63 @@
   gap: var(--space-2);
   align-items: center;
 }
+.task-group-control select {
+  width: auto;
+}
+.tasks-page--board-focus {
+  height: 100%;
+  min-height: 0;
+  gap: 0;
+  overflow: hidden;
+}
+.tasks-page--board-focus > .task-board-viewport,
+.tasks-page--board-focus > :has(.task-board-viewport) {
+  min-height: 0;
+  flex: 1;
+}
+.task-toolbar--focus {
+  position: sticky;
+  top: 0;
+  z-index: 5;
+  border-radius: 0;
+  padding: 0 var(--focus-inset, var(--space-2));
+  box-shadow: var(--shadow-sm);
+}
+.task-focus-main {
+  display: flex;
+  align-items: center;
+  flex-wrap: wrap;
+  gap: var(--space-2);
+  min-height: 44px;
+}
+.task-focus-title {
+  margin-right: auto;
+  font-size: var(--text-base);
+  white-space: nowrap;
+}
+.task-focus-title span { color: var(--muted); font-weight: 400; }
+.task-toolbar--focus .task-group-control select { min-width: 6rem; }
+@media (max-width: 700px) {
+  .task-focus-main {
+    display: grid;
+    grid-template-columns: minmax(0, 1fr) repeat(3, auto);
+    grid-template-rows: minmax(44px, auto) minmax(44px, auto);
+    row-gap: 0;
+  }
+  .task-focus-title { grid-row: 1; grid-column: 1 / 3; }
+  .task-focus-clear { grid-row: 1; grid-column: 3; }
+  .task-focus-exit { grid-row: 1; grid-column: 4; }
+  .task-toolbar--focus .task-group-control { grid-row: 2; grid-column: 1; min-width: 0; }
+  .task-toolbar--focus .task-group-control select { width: 100%; min-width: 0; }
+  .task-focus-filters { grid-row: 2; grid-column: 2; }
+  .task-focus-details { grid-row: 2; grid-column: 3; }
+  .task-focus-add { grid-row: 2; grid-column: 4; }
+  .task-focus-add span, .task-focus-exit-label { display: none; }
+  .task-focus-main button { min-width: 44px; padding-inline: var(--space-2); }
+}
+@media (max-width: 390px) {
+  .task-focus-title span { display: none; }
+}
 .task-row {
   display: flex;
   padding: var(--space-1) var(--space-3);
@@ -78,7 +135,7 @@
   line-height: 1.35;
 }
 .task-title:hover {
-  color: var(--accent);
+  text-decoration: underline;
 }
 .task-row-meta {
   margin-top: calc(-1 * var(--space-1));
@@ -128,9 +185,6 @@
   display: flex;
   align-items: center;
   gap: var(--space-2);
-}
-.task-group-control select {
-  width: auto;
 }
 .task-subtasks {
   border: 1px solid var(--border);

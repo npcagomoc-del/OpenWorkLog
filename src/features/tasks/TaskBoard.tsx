@@ -10,8 +10,10 @@ import {
   useSensors,
 } from '@dnd-kit/core';
 import { restrictToWindowEdges, snapCenterToCursor } from '@dnd-kit/modifiers';
+import { ChevronLeft, ChevronRight } from 'lucide-react';
 import { type ReactNode, useEffect, useRef, useState } from 'react';
 import { createPortal } from 'react-dom';
+import { useShell } from '../../app/ShellContext';
 import { Card, StatusBadge } from '../../components/ui';
 import type { Task } from '../../domain/models';
 import { TaskBoardCard } from './TaskBoardCard';
@@ -53,6 +55,9 @@ export function TaskBoard(props: TaskViewProps) {
   const { tasks, groups, onMove } = props;
   const [activeTask, setActiveTask] = useState<Task | null>(null);
   const [keyboardDrag, setKeyboardDrag] = useState(false);
+  const { focusMode } = useShell();
+  const viewport = useRef<HTMLElement>(null);
+  const [laneIndex, setLaneIndex] = useState(0);
   const keyboardGroup = useRef<TaskGroup | null>(null);
   const [focusTarget, setFocusTarget] = useState<{
     readonly id: string;
@@ -75,6 +80,30 @@ export function TaskBoard(props: TaskViewProps) {
       setFocusTarget(null);
     }
   }, [focusTarget, tasks]);
+  function goToLane(index: number) {
+    const target = viewport.current?.querySelectorAll<HTMLElement>('.task-board-column')[index];
+    const container = viewport.current;
+    if (!target || !container) return;
+    const reducedMotion = window.matchMedia('(prefers-reduced-motion: reduce)').matches;
+    container.scrollTo({
+      left: target.offsetLeft - container.offsetLeft,
+      behavior: reducedMotion ? 'instant' : 'smooth',
+    });
+    setLaneIndex(index);
+  }
+  function updateLaneIndex() {
+    const container = viewport.current;
+    if (!container) return;
+    const lanes = [...container.querySelectorAll<HTMLElement>('.task-board-column')];
+    const closest = lanes.reduce((best, lane, index) => {
+      const current = lanes[best];
+      if (!current) return index;
+      const position = container.offsetLeft + container.scrollLeft;
+      return Math.abs(lane.offsetLeft - position) < Math.abs(current.offsetLeft - position)
+        ? index : best;
+    }, 0);
+    setLaneIndex(closest);
+  }
   async function finish({ active, over }: DragEndEvent) {
     setActiveTask(null);
     const task = tasks.find((item) => item.id === active.id);
@@ -115,12 +144,17 @@ export function TaskBoard(props: TaskViewProps) {
         },
       }}
     >
-      <p className="small muted task-board-help">
+      {!focusMode && <p className="small muted task-board-help">
         Drag a handle to change{' '}
         {props.preferences.groupBy === 'businessUnit' ? 'business unit' : props.preferences.groupBy}
         . Hold briefly on touch, or use Actions → Move to.
-      </p>
-      <section className="task-board-viewport" aria-label="Task board columns">
+      </p>}
+      {focusMode && groups.length > 0 && <nav className="task-board-lane-nav" aria-label="Board lanes">
+        <button type="button" className="icon-button" aria-label="Previous lane" disabled={laneIndex === 0} onClick={() => goToLane(laneIndex - 1)}><ChevronLeft size={20} /></button>
+        <span className="task-board-lane-label" aria-live="polite">{groups[laneIndex]?.label ?? groups[0]?.label} <span className="muted">{laneIndex + 1} / {groups.length}</span></span>
+        <button type="button" className="icon-button" aria-label="Next lane" disabled={laneIndex >= groups.length - 1} onClick={() => goToLane(laneIndex + 1)}><ChevronRight size={20} /></button>
+      </nav>}
+      <section ref={viewport} className="task-board-viewport" aria-label="Task board columns" onScroll={updateLaneIndex}>
         <div className="task-board">
           {groups.map((group) => {
             const columnTasks = tasks.filter((task) => belongsToGroup(task, group));

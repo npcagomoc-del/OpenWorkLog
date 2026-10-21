@@ -1,4 +1,4 @@
-import { Columns3, Download, List, Search, Table2 } from 'lucide-react';
+import { Columns3, Download, List, Minimize2, Plus, Search, Table2 } from 'lucide-react';
 import { useState } from 'react';
 import { Button, Card, Field, Modal, SegmentedControl } from '../../components/ui';
 import type { Category, Project, Settings } from '../../domain/models';
@@ -29,6 +29,11 @@ export function TaskToolbar({
   groups,
   onPreferences,
   onExport,
+  onClearFilters,
+  projectFilterActive = false,
+  focus = false,
+  onExitFocus,
+  onNewTask,
 }: {
   readonly filters: TaskFilters;
   readonly onFilter: (patch: Partial<TaskFilters>) => void;
@@ -39,9 +44,16 @@ export function TaskToolbar({
   readonly groups: readonly TaskGroup[];
   readonly onPreferences: (preferences: TaskPreferences) => void;
   readonly onExport: () => void;
+  readonly onClearFilters: () => void;
+  readonly projectFilterActive?: boolean;
+  readonly focus?: boolean;
+  readonly onExitFocus?: () => void;
+  readonly onNewTask?: () => void;
 }) {
   const [panel, setPanel] = useState<'filters' | 'details' | null>(null);
   const count = [
+    projectFilterActive,
+    filters.query,
     filters.status,
     filters.categoryId,
     filters.type,
@@ -49,8 +61,31 @@ export function TaskToolbar({
     filters.businessUnit,
   ].filter(Boolean).length;
   return (
-    <Card className="task-toolbar">
-      <div className="task-toolbar-main">
+    <Card className={`task-toolbar${focus ? ' task-toolbar--focus' : ''}`}>
+      {focus ? (
+        <div className="task-focus-main">
+          <strong className="task-focus-title">My tasks <span>· Kanban</span></strong>
+          {count > 0 && <Button className="task-focus-clear" variant="ghost" onClick={onClearFilters}>Clear</Button>}
+          <div className="task-group-control">
+            <label htmlFor="task-group-by" className="visually-hidden">Group by</label>
+            <select
+              id="task-group-by"
+              aria-label="Group by"
+              value={preferences.groupBy}
+              onChange={(event) => {
+                const option = groupingOptions.find((item) => item.value === event.target.value);
+                if (option) onPreferences({ ...preferences, groupBy: option.value });
+              }}
+            >
+              {groupingOptions.map((option) => <option key={option.value} value={option.value}>{option.label}</option>)}
+            </select>
+          </div>
+          <Button className="task-focus-filters" onClick={() => setPanel('filters')}>Filters{count ? ` (${count})` : ''}</Button>
+          <Button className="task-focus-details" onClick={() => setPanel('details')}>Cards</Button>
+          <Button className="task-focus-add" variant="primary" onClick={onNewTask} aria-label="New task"><Plus size={18} /><span>New task</span></Button>
+          <Button className="task-focus-exit" onClick={onExitFocus} aria-label="Exit focus"><Minimize2 size={18} /><span className="task-focus-exit-label">Exit focus</span></Button>
+        </div>
+      ) : <div className="task-toolbar-main">
         <div className="task-search">
           <Search size={18} aria-hidden="true" />
           <input
@@ -71,8 +106,8 @@ export function TaskToolbar({
         <Button onClick={onExport} aria-label="Export tasks CSV">
           <Download size={17} />
         </Button>
-      </div>
-      {preferences.view === 'board' && (
+      </div>}
+      {!focus && preferences.view === 'board' && (
         <div className="task-group-control">
           <label htmlFor="task-group-by" className="small muted">
             Group by
@@ -99,18 +134,7 @@ export function TaskToolbar({
         onClose={() => setPanel(null)}
         footer={
           <>
-            <Button
-              onClick={() =>
-                onFilter({
-                  query: '',
-                  status: '',
-                  categoryId: '',
-                  type: '',
-                  projectId: '',
-                  businessUnit: '',
-                })
-              }
-            >
+            <Button onClick={onClearFilters}>
               Clear filters
             </Button>
             <Button variant="primary" onClick={() => setPanel(null)}>
@@ -120,6 +144,9 @@ export function TaskToolbar({
         }
       >
         <div className="form-grid">
+          <Field label="Search" htmlFor="filter-search" >
+            <input id="filter-search" type="search" value={filters.query} onChange={(event) => onFilter({ query: event.target.value })} placeholder="Search tasks" />
+          </Field>
           <Field label="Status" htmlFor="filter-status">
             <select
               id="filter-status"

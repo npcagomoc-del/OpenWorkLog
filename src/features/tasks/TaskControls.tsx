@@ -10,7 +10,7 @@ export function TaskName({
   return (
     <div className="task-name">
       <button type="button" className="task-title" onClick={() => onEdit(task)}>
-        {task.title}
+        <span style={{ color: 'var(--text)' }}>{task.title}</span>
       </button>
       {task.demo && <Badge>Demo</Badge>}
     </div>
